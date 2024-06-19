@@ -10,6 +10,7 @@ function defaultValue(value:any){
         const setter = function(newValue){
             val = newValue
         }
+        //在类的原型上定义了一个属性
         Object.defineProperty(target,propertyKey,{
             enumerable:true,
             configurable:true,
@@ -22,10 +23,7 @@ function defaultValue(value:any){
 class Settings{
     @defaultValue('dark')
     theme:string
-    @defaultValue(30)
-    timeout:number
 }
 
 const settings = new Settings();
 console.log(settings.theme)
-console.log(settings.timeout)

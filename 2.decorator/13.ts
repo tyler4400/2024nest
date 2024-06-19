@@ -29,11 +29,17 @@ function accessorDecorator1(target,propertyKey){
 function accessorDecorator2(target,propertyKey){
     console.log('accessorDecorator2')
 }
-function parametorDecorator1(target,propertyKey,parametorIndex:number){
-    console.log('parametorDecorator1',propertyKey)//propertyKey方法名
+function parametorDecorator4(target,propertyKey,parametorIndex:number){
+    console.log('parametorDecorator4',propertyKey)//propertyKey方法名
+}
+function parametorDecorator3(target,propertyKey,parametorIndex:number){
+    console.log('parametorDecorator3',propertyKey)//propertyKey方法名
 }
 function parametorDecorator2(target,propertyKey,parametorIndex:number){
     console.log('parametorDecorator2',propertyKey)//propertyKey方法名
+}
+function parametorDecorator1(target,propertyKey,parametorIndex:number){
+    console.log('parametorDecorator1',propertyKey)//propertyKey方法名
 }
 @classDecorator1
 @classDecorator2
@@ -49,5 +55,7 @@ class Example{
     prop:string
     @methodDecorator1
     @methodDecorator2
-    method(@parametorDecorator1 @parametorDecorator2 params:any){}
+    method(@parametorDecorator4 @parametorDecorator3 param1:any,@parametorDecorator2 @parametorDecorator1 param2:any){}
 }
+//如果一个方法有多个参数，参数装饰器会从右向左执行
+//一个参数也可有会有多个参数装饰 器，这些装饰 器也是从右向左执行的
