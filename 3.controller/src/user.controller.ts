@@ -26,7 +26,7 @@ export class UserController{
         return `accept:${accept}`;
     }
     @Get('session')
-    handleSession(@Session() session:any,@Session('pageView') pageView:string){
+    handleSession(@Session() session:any,@Session() pageView:string){
         console.log('session',session);
         console.log('pageView',pageView);
         if(session.pageView){
@@ -60,6 +60,7 @@ export class UserController{
     createUser(@Body() createUserDto,@Body('username') username:string){
         console.log('createUserDto',createUserDto);
         console.log('username',username);
+        throw new Error('error');
         return `user created`
     }
     @Get('response')
@@ -81,13 +82,14 @@ export class UserController{
     @Get('next')
     next(@Next() next){
        console.log('next')
-       next();
+       //如果给next传递了参数，会交给后面的错误处理中间件进行处理
+       next('wrong');
     }
     @Get('/redirect')
     @Redirect('/users/req',301)
     handleRedirect(){
 
-    }
+    } 
     @Get('/redirect2')
     handleRedirect2(@Query('version') version){
         return { url: `https://docs.nestjs.com/${version}/` ,statusCode:301};

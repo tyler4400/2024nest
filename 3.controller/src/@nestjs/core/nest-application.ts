@@ -47,10 +47,10 @@ export class NestApplication {
                 //拼出来完整的路由路径
                 const routePath = path.posix.join('/', prefix, pathMetadata)
                 //配置路由，当客户端以httpMethod方法请求routePath路径的时候，会由对应的函数进行处理
-                this.app[httpMethod.toLowerCase()](routePath, (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
+                this.app[httpMethod.toLowerCase()](routePath, async (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
                     const args = this.resolveParams(controller, methodName, req, res, next);
                     //执行路由处理函数，获取返回值
-                    const result = method.call(controller, ...args);
+                    const result = await method.call(controller, ...args);
                     if (result?.url) {
                         return res.redirect(result.statusCode || 302, result.url);
                     }
