@@ -11,4 +11,10 @@
 
 
 
+## Provider
+- 定义provider类
+- 在Module里注册Provider类
+- 在控制里面声明或者说使用Provder类
+
+
 

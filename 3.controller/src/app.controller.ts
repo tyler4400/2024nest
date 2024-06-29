@@ -1,13 +1,27 @@
-import {Controller,Get} from '@nestjs/common'
+import { Controller, Get, Inject } from '@nestjs/common'
+import {
+    LoggerClassService,
+    LoggerService,
+    UseFactory,
+    UseValueService
+} from './logger.service'
+
 @Controller()
-export class AppController{
-    //使用Get装饰器标记index方法为HTTP GET路由处理程序
-    @Get()
-    index(){
-        return 'hello'
+export class AppController {
+    constructor(
+        private loggerClassService: LoggerClassService,
+        private loggerService: LoggerService,
+        @Inject('StringToken') private useValueService: UseValueService,
+        @Inject('FactoryToken') private useFactory: UseFactory,
+    ) {
+
     }
-    @Get('info')
-    main(){
-        return 'info'
+    @Get()
+    index() {
+        this.loggerClassService.log('index');
+        this.loggerService.log('index');
+        this.useValueService.log('index');
+        this.useFactory.log('index');
+        return 'index';
     }
 }
