@@ -5,6 +5,6 @@ import { CommonService } from './common.service';
     providers:[CommonService],
     exports:[CommonService]
 })
-export class CommonModule{
+export class Common2Module{
 
 }

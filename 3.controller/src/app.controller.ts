@@ -1,10 +1,10 @@
 import { Controller, Get, Inject } from '@nestjs/common'
-import { CommonService } from './common.service';
+import { OtherService } from './other.service';
 
 @Controller()
 export class AppController {
     constructor(
-        private commonService: CommonService
+        private otherService: OtherService
     ) {
 
     }
@@ -12,9 +12,9 @@ export class AppController {
     index() {
         return 'index';
     }
-    @Get('common')
-    common() {
-        this.commonService.log('hello');
-        return 'common';
+    @Get('other')
+    other() {
+        this.otherService.log('hello');
+        return 'other';
     }
 }
