@@ -27,10 +27,7 @@ export class UseValueService{
 
 @Injectable()
 export class UseFactory{
-    constructor(private prefix1:string,private suffix:string){
-        console.log('UseFactory',prefix1,suffix)
-    }
     log(message){
-        console.log('UseFactory',this.suffix)
+        console.log('UseFactory')
     }
 }

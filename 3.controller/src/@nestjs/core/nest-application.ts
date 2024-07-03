@@ -6,7 +6,7 @@ import { INJECTED_TOKENS, DESIGN_PARAMTYPES } from '@nestjs/common'
 export class NestApplication {
     //在它的内部私用化一个Express实例
     private readonly app: Express = express()
-    //在此处保存全部的providers
+    //在此处保存全部的providers key是providers的token,值就是provider的实例或者说值
     private readonly providers = new Map()
     constructor(protected readonly module) {
         this.app.use(express.json());//用来把JSON格式的请求体对象放在req.body上
@@ -17,45 +17,71 @@ export class NestApplication {
         });
         this.initProviders();//注入providers
     }
-    initProviders() {
-        const providers = Reflect.getMetadata('providers', this.module) ?? [];
-        for (const provider of providers) {
-            //如果provier是一个类
-            if (provider.provide && provider.useClass) {
-                const dependencies = this.resolveDependencies(provider.useClass);
-                //创建类的实例
-                const classInstance = new provider.useClass(...dependencies);
-                //把provider的token和类的实例保存到this.providers里
-                this.providers.set(provider.provide, classInstance);
-            } else if (provider.provide && provider.useValue) {
-                //提供的是一个值，则不需要容器帮助实例化，直接使用此值注册就可以了
-                this.providers.set(provider.provide, provider.useValue);
-            }  else if (provider.provide && provider.useFactory) {
-                const inject = provider.inject??[];
-                //const injectedValues = inject.map((injectedToken)=>this.getProviderByToken(injectedToken));
-                //const injectedValues = inject.map(this.getProviderByToken.bind(this));
-                const injectedValues = inject.map(this.getProviderByToken);
-                const value = provider.useFactory(...injectedValues);
-                //提供的是一个值，则不需要容器帮助实例化，直接使用此值注册就可以了
-                this.providers.set(provider.provide, value);
-            }else {
-                //表示只提供了一个类,token是这个类，值是这个类的实例
-                const dependencies = this.resolveDependencies(provider);
-                this.providers.set(provider, new provider(...dependencies));
+    //初始化提供化
+    initProviders() {//重写注册provider的流程
+        //获取模块导入的元数据
+        const imports = Reflect.getMetadata('imports', this.module) ?? [];
+        //遍历所有的导入的模块
+        for (const importModule of imports) {//LoggerModule
+            //获取导入模块中的提供者元数据[SUFFIX,LoggerClassService]
+            const importedProviders = Reflect.getMetadata('providers', importModule) ?? [];
+            for (const provider of importedProviders) {
+                this.addProvider(provider);
             }
+        }
+        //获取当前模块提供者的元数据
+        const providers = Reflect.getMetadata('providers', this.module) ?? [];
+        //遍历并添加每个提供者
+        for (const provider of providers) {
+            this.addProvider(provider);
+        }
+    }
+    addProvider(provider) {
+        //为了避免循环依赖，每次添加前可以做一个判断，如果Map中已经存在，则直接返回
+        //const injectToken = provider.provide??provider;
+        //if(this.providers.has(injectToken)) return;
+        //如果有provider的token,并且有useClass属性，说明提供的是一个类，需要实例化
+        if (provider.provide && provider.useClass) {
+            //获取这个类的定义LoggerService
+            const Clazz = provider.useClass;
+            //获取此类的参数['suffix']
+            const dependencies = this.resolveDependencies(Clazz);
+            //创建提供者类的实例
+            const value = new Clazz(...dependencies);
+            //把提供者的token和实例保存到Map中
+            this.providers.set(provider.provide, value);
+            //如果提供的是一个值，则直接放到Map中
+        } else if (provider.provide && provider.useValue) {
+            this.providers.set(provider.provide, provider.useValue);
+        } else if (provider.provide && provider.useFactory) {
+            const inject = provider.inject ?? [];//获取要注入工厂函数的参数  
+            //解析出参数的值
+            const injectedValues = inject.map(injectToken => this.getProviderByToken(injectToken));
+            //执行工厂方法，获取返回的值 
+            const value = provider.useFactory(...injectedValues);
+            //把token和值注册到Map中
+            this.providers.set(provider.provide, value);
+        } else {
+            //获取此类的参数['suffix']
+            const dependencies = this.resolveDependencies(provider);
+            console.log('dependencies',dependencies)
+            //创建提供者类的实例
+            const value = new provider(...dependencies);
+            //把提供者的token和实例保存到Map中
+            this.providers.set(provider, value);
         }
     }
     use(middleware) {
         this.app.use(middleware);
     }
-    private getProviderByToken=(injectedToken)=>{
-        return this.providers.get(injectedToken)??injectedToken;
+    private getProviderByToken = (injectedToken) => {
+        return this.providers.get(injectedToken) ?? injectedToken;
     }
     private resolveDependencies(Clazz) {
         //取得注入的token
         const injectedTokens = Reflect.getMetadata(INJECTED_TOKENS, Clazz) ?? [];
         //获取构造函数的参数类型
-        const constructorParams = Reflect.getMetadata(DESIGN_PARAMTYPES, Clazz);
+        const constructorParams = Reflect.getMetadata(DESIGN_PARAMTYPES, Clazz) ?? [];
         return constructorParams.map((param, index) => {
             //把每个param中的token默认换成对应的provider值
             return this.getProviderByToken(injectedTokens[index] ?? param);
