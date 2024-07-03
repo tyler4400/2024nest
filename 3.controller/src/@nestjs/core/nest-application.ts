@@ -23,11 +23,7 @@ export class NestApplication {
         const imports = Reflect.getMetadata('imports', this.module) ?? [];
         //遍历所有的导入的模块
         for (const importModule of imports) {//LoggerModule
-            //获取导入模块中的提供者元数据[SUFFIX,LoggerClassService]
-            const importedProviders = Reflect.getMetadata('providers', importModule) ?? [];
-            for (const provider of importedProviders) {
-                this.addProvider(provider);
-            }
+            this.registerProvidersFromModule(importModule);
         }
         //获取当前模块提供者的元数据
         const providers = Reflect.getMetadata('providers', this.module) ?? [];
@@ -35,6 +31,31 @@ export class NestApplication {
         for (const provider of providers) {
             this.addProvider(provider);
         }
+    }
+    private registerProvidersFromModule(module) {
+        //拿到导入的模块providers进行全量注册
+        const importedProviders = Reflect.getMetadata('providers', module) ?? [];
+        //1.有可能导入的模块只导出了一部分，并没有全量导出,所以需要使用exports进行过滤 
+        const exports = Reflect.getMetadata('exports', module) ?? [];
+        //遍历导出exports数组
+        for (const exportToken of exports) {
+            //2.exports里还可能有module
+            if (this.isModule(exportToken)) {
+                //要执行递归操作
+                this.registerProvidersFromModule(exportToken);
+            } else {
+                const provider = importedProviders.find(provider => provider === exportToken || provider.provide == exportToken);
+                if (provider) {
+                    this.addProvider(provider);
+                }
+            }
+        }
+        for (const provider of importedProviders) {
+            this.addProvider(provider);
+        }
+    }
+    private isModule(exportToken) {
+        return exportToken && exportToken instanceof Function && Reflect.getMetadata('isModule', exportToken);
     }
     addProvider(provider) {
         //为了避免循环依赖，每次添加前可以做一个判断，如果Map中已经存在，则直接返回
@@ -64,7 +85,6 @@ export class NestApplication {
         } else {
             //获取此类的参数['suffix']
             const dependencies = this.resolveDependencies(provider);
-            console.log('dependencies',dependencies)
             //创建提供者类的实例
             const value = new provider(...dependencies);
             //把提供者的token和实例保存到Map中
