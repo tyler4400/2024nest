@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import express, { Express, Request as ExpressRequest, Response as ExpressResponse, NextFunction } from 'express'
 import { Logger } from "./logger";
 import path from 'path'
-import { INJECTED_TOKENS, DESIGN_PARAMTYPES } from '@nestjs/common'
+import { INJECTED_TOKENS, DESIGN_PARAMTYPES,defineModule } from '@nestjs/common'
 export class NestApplication {
     //在它的内部私用化一个Express实例
     private readonly app: Express = express()
@@ -15,19 +15,39 @@ export class NestApplication {
     constructor(protected readonly module) {
         this.app.use(express.json());//用来把JSON格式的请求体对象放在req.body上
         this.app.use(express.urlencoded({ extended: true }));//把form表单格式的请求体对象放在req.body
-        this.app.use((req, res, next) => {
-            req.user = { name: 'admin', role: 'admin' };
-            next();
-        });
-        this.initProviders();//注入providers
+       
     }
     //初始化提供化
-    initProviders() {//重写注册provider的流程
+    async initProviders() {//重写注册provider的流程
         //获取模块导入的元数据
         const imports = Reflect.getMetadata('imports', this.module) ?? [];
         //遍历所有的导入的模块
         for (const importModule of imports) {//LoggerModule
-            this.registerProvidersFromModule(importModule, this.module);
+            let importedModule = importModule;
+            //如果导入的是一个Promise，说是它是异步的动态模块
+            if(importModule instanceof Promise){
+                importedModule = await importedModule;
+            }
+            //如果导入的模块有module属性，说明这是一个动态模块
+            if('module' in importedModule){
+                //获取动态模块返回的老的模块定义，新的providers数组，新的导出的token数组
+                const {module,providers,controllers,exports} = importedModule;
+                //把老的和新的providers和exports进行合并
+                const oldControllers = Reflect.getMetadata('controllers',module)
+                const newControllers = [...(oldControllers??[]),...(controllers??[])];
+                defineModule(module,newControllers);
+                const oldProviders = Reflect.getMetadata('providers',module)
+                const newProviders = [...(oldProviders??[]),...(providers??[])];
+                defineModule(module,newProviders);
+                const oldExports = Reflect.getMetadata('exports',module)
+                const newExports = [...(oldExports??[]),...(exports??[])];
+                Reflect.defineMetadata('controllers',newControllers,module)
+                Reflect.defineMetadata('providers',newProviders,module)
+                Reflect.defineMetadata('exports',newExports,module)
+                this.registerProvidersFromModule(module, this.module);
+            }else{
+                this.registerProvidersFromModule(importedModule, this.module);
+            }
         }
         //获取当前模块提供者的元数据
         const providers = Reflect.getMetadata('providers', this.module) ?? [];
@@ -254,6 +274,7 @@ export class NestApplication {
     }
     //启动HTTP服务器
     async listen(port) {
+        await this.initProviders();//注入providers
         await this.init();
         //调用express实例的listen方法启动一个HTTP服务器，监听port端口
         this.app.listen(port, () => {

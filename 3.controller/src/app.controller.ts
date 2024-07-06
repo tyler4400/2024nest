@@ -1,20 +1,13 @@
 import { Controller, Get, Inject } from '@nestjs/common'
-import { OtherService } from './other.service';
+import { AppService } from './app.service';
 
 @Controller()
 export class AppController {
-    constructor(
-        private otherService: OtherService
-    ) {
+    constructor(private readonly appService:AppService){
 
     }
-    @Get()
+    @Get('config')
     index() {
-        return 'index';
-    }
-    @Get('other')
-    other() {
-        this.otherService.log('hello');
-        return 'other';
+        return this.appService.getConfig();
     }
 }
