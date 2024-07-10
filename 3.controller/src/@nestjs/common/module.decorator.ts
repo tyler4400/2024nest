@@ -17,8 +17,8 @@ export function Module(metadata:ModuleMetadata):ClassDecorator{
       //我得知道此控制器属于哪个模块
       defineModule(target,metadata.controllers);
       Reflect.defineMetadata('controllers',metadata.controllers,target);
-       //我得知道此providers属于哪个模块
-      defineModule(target,metadata.providers??[]);
+       //我得知道此providers属于哪个模块 其实这行代码我们尚未使用 target就是module
+      defineModule(target,(metadata.providers??[]).map(provider=>provider.useClass).filter(Boolean));
       Reflect.defineMetadata('providers',metadata.providers,target);
       //在类上保存exports
       Reflect.defineMetadata('exports',metadata.exports,target);

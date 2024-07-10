@@ -2,9 +2,8 @@ import 'reflect-metadata';
 import express, { Express, Request as ExpressRequest, Response as ExpressResponse, NextFunction } from 'express'
 import { Logger } from "./logger";
 import path from 'path'
-import {RequestMethod } from '@nestjs/common'
-import { INJECTED_TOKENS, DESIGN_PARAMTYPES} from '../common/constants'
-import {defineModule} from '../common/module.decorator';
+import { ArgumentsHost, RequestMethod,GlobalHttpExectionFilter,defineModule,INJECTED_TOKENS, DESIGN_PARAMTYPES } from '@nestjs/common'
+import { APP_FILTER } from './constants';
 export class NestApplication {
     //在它的内部私用化一个Express实例
     private readonly app: Express = express()
@@ -18,11 +17,19 @@ export class NestApplication {
     private readonly middlewares = []
     //记录所有的要排除的路径
     private readonly excludedRoutes = []
+    //添加一个默认的全局异常过滤器
+    private readonly defaultGlobalHttpExceptionFilter = new GlobalHttpExectionFilter()
+    //这里存放着所有的全局的异常过滤器
+    private readonly globalHttpExceptionFilters = []
     constructor(protected readonly module) {
         this.app.use(express.json());//用来把JSON格式的请求体对象放在req.body上
         this.app.use(express.urlencoded({ extended: true }));//把form表单格式的请求体对象放在req.body
     }
-    exclude(...routeInfos):this{
+    useGlobalFilters(...filters){
+        defineModule(this.module,filters.filter(filter=>filter instanceof Function));
+        this.globalHttpExceptionFilters.push(...filters);
+    }
+    exclude(...routeInfos): this {
         this.excludedRoutes.push(...routeInfos.map(this.normalizeRouteInfo));
         return this;
     }
@@ -32,23 +39,23 @@ export class NestApplication {
     }
     apply(...middleware) {
         //把接收到的中间件放到中间数组中，并且返回当前的实例
-        defineModule(this.module,middleware)
+        defineModule(this.module, middleware)
         this.middlewares.push(...middleware);
         return this;
     }
-    getMiddelwareInstance(middleware){
-        if( middleware instanceof Function){
+    getMiddelwareInstance(middleware) {
+        if (middleware instanceof Function) {
             const dependencies = this.resolveDependencies(middleware);
             return new middleware(...dependencies);
         }
         return middleware;
     }
     //this.isExcluded执行的时候 也没有返回this 有影响吗
-    isExcluded(reqPath:string,method:RequestMethod){
+    isExcluded(reqPath: string, method: RequestMethod) {
         //遍历要排除的路径，看看哪个一个排除的路径和当前的请求路径和方法名匹配
-        return this.excludedRoutes.some(routeInfo=>{
-            const {routePath,routeMethod}=routeInfo;
-            return routePath === reqPath && (routeMethod===RequestMethod.ALL ||routeMethod===method)
+        return this.excludedRoutes.some(routeInfo => {
+            const { routePath, routeMethod } = routeInfo;
+            return routePath === reqPath && (routeMethod === RequestMethod.ALL || routeMethod === method)
         });
     }
     forRoutes(...routes) {
@@ -62,21 +69,21 @@ export class NestApplication {
                 this.app.use(routePath, (req, res, next) => {
                     //forRoutes 和 exclude调用顺序会不会对程序结果有影响
                     //如果当前的路径要排除掉的话，那么不走当前的中间件了
-                    if(this.isExcluded(req.originalUrl,req.method)){
+                    if (this.isExcluded(req.originalUrl, req.method)) {
                         return next();
                     }
                     //如果配置方法名是All。或者方法相同完全 匹配
-                    if(routeMethod ===RequestMethod.ALL ||routeMethod === req.method){
+                    if (routeMethod === RequestMethod.ALL || routeMethod === req.method) {
                         //此处middleware可能是一个类，也可能是一个实例，也可能只是一个函数
-                        if('use' in middleware.prototype || 'use' in middleware){
+                        if ('use' in middleware.prototype || 'use' in middleware) {
                             const middlewareInstance = this.getMiddelwareInstance(middleware);
-                            middlewareInstance.use(req,res,next);
-                        }else if(middleware instanceof Function){
-                            middleware(req,res,next);
-                        }else{
+                            middlewareInstance.use(req, res, next);
+                        } else if (middleware instanceof Function) {
+                            middleware(req, res, next);
+                        } else {
                             next();
                         }
-                    }else{
+                    } else {
                         next();
                     }
                 });
@@ -93,13 +100,13 @@ export class NestApplication {
             //如果传入的是一个路径对象，
             routePath = route.path;
             routeMethod = route.method ?? RequestMethod.ALL;
-        }else if(route instanceof Function){
+        } else if (route instanceof Function) {
             //如果route是一个控制器的话，以它的路径前缀作为路径
-            routePath = Reflect.getMetadata('prefix',route);
+            routePath = Reflect.getMetadata('prefix', route);
         }
         //  cats=>/cats 
-        routePath = path.posix.join('/',routePath);
-        return {routePath,routeMethod}
+        routePath = path.posix.join('/', routePath);
+        return { routePath, routeMethod }
     }
     //初始化提供化
     async initProviders() {//重写注册provider的流程
@@ -168,9 +175,11 @@ export class NestApplication {
     }
     //原来的provider都混在一起了，现在需要分开，每个模块有自己的providers
     addProvider(provider, module, global = false) {
-        //此providers代表module这个模块对应的provider的token
+        //providers在global为true的情况下就是 this.globalProviders Set
+        //providers在global为false的情况下就是module对应的providers Set
         const providers = global ? this.globalProviders : (this.moduleProviers.get(module) || new Set());
-        if (!this.moduleProviers.has(module)) {
+        //因为set本身就可以去重，里面只会不同一样的值，两次添加相同的值只添加一次
+        if(!global){
             this.moduleProviers.set(module, providers);
         }
         //获取要注册的provider的token
@@ -237,6 +246,8 @@ export class NestApplication {
         const constructorParams = Reflect.getMetadata(DESIGN_PARAMTYPES, Clazz) ?? [];
         return constructorParams.map((param, index) => {
             const module = Reflect.getMetadata('module', Clazz);
+            console.log('module',module);
+            console.log('token',injectedTokens[index] ?? param);
             //把每个param中的token默认换成对应的provider值
             return this.getProviderByToken(injectedTokens[index] ?? param, module);
         });
@@ -258,6 +269,9 @@ export class NestApplication {
             //开始解析路由
             Logger.log(`${Controller.name} {${prefix}}`, 'RoutesResolver');
             const controllerPrototype = Controller.prototype;
+            //获取控制器上绑定的异常过滤器数组
+            const controllerFilters = Reflect.getMetadata('filters',Controller)?? [];
+            defineModule(this.module,controllerFilters);
             //遍历类的原型上的方法名
             for (const methodName of Object.getOwnPropertyNames(controllerPrototype)) {
                 //获取原型上的方法 index
@@ -270,36 +284,50 @@ export class NestApplication {
                 const redirectStatusCode = Reflect.getMetadata('redirectStatusCode', method);
                 const statusCode = Reflect.getMetadata('statusCode', method);
                 const headers = Reflect.getMetadata('headers', method) ?? [];
+                //获取方法上绑定的异常过滤器数组
+                const methodFilters = Reflect.getMetadata('filters',method)?? [];
+                defineModule(this.module,methodFilters);
                 //如果方法名不存在，则不处理
                 if (!httpMethod) continue;
                 //拼出来完整的路由路径
                 const routePath = path.posix.join('/', prefix, pathMetadata)
                 //配置路由，当客户端以httpMethod方法请求routePath路径的时候，会由对应的函数进行处理
                 this.app[httpMethod.toLowerCase()](routePath, async (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
-                    const args = this.resolveParams(controller, methodName, req, res, next);
-                    //执行路由处理函数，获取返回值
-                    const result = await method.call(controller, ...args);
-                    if (result?.url) {
-                        return res.redirect(result.statusCode || 302, result.url);
+                    const host:ArgumentsHost = {//因为Nest不但支持http,还支持graphql 微服务 websocket
+                        switchToHttp: () => ({
+                            getRequest: () => req,
+                            getResponse: () => res,
+                            getNext: () => next,
+                        })
                     }
-                    //判断如果需要重定向，则直接重定向到指定的redirectUrl
-                    if (redirectUrl) {
-                        return res.redirect(redirectStatusCode || 302, redirectUrl);
-                    }
-                    if (statusCode) {
-                        res.statusCode = statusCode;
-                    } else if (httpMethod === 'POST') {
-                        res.statusCode = 201;
-                    }
-                    //判断controller的methodName方法里有没有使用Response或Res参数装饰器，如果用了任何一个则不发响应
-                    const responseMetadata = this.getResponseMetadata(controller, methodName);
-                    //或者没有注入Response参数装饰器，或者注入了但是传递了passthrough参数，都会由Nest.js来返回响应
-                    if (!responseMetadata || (responseMetadata?.data?.passthrough)) {
-                        headers.forEach(({ name, value }) => {
-                            res.setHeader(name, value);
-                        });
-                        //把返回值序列化发回给客户端
-                        res.send(result);
+                    try {
+                        const args = this.resolveParams(controller, methodName, req, res, next,host);
+                        //执行路由处理函数，获取返回值
+                        const result = await method.call(controller, ...args);
+                        if (result?.url) {
+                            return res.redirect(result.statusCode || 302, result.url);
+                        }
+                        //判断如果需要重定向，则直接重定向到指定的redirectUrl
+                        if (redirectUrl) {
+                            return res.redirect(redirectStatusCode || 302, redirectUrl);
+                        }
+                        if (statusCode) {
+                            res.statusCode = statusCode;
+                        } else if (httpMethod === 'POST') {
+                            res.statusCode = 201;
+                        }
+                        //判断controller的methodName方法里有没有使用Response或Res参数装饰器，如果用了任何一个则不发响应
+                        const responseMetadata = this.getResponseMetadata(controller, methodName);
+                        //或者没有注入Response参数装饰器，或者注入了但是传递了passthrough参数，都会由Nest.js来返回响应
+                        if (!responseMetadata || (responseMetadata?.data?.passthrough)) {
+                            headers.forEach(({ name, value }) => {
+                                res.setHeader(name, value);
+                            });
+                            //把返回值序列化发回给客户端
+                            res.send(result);
+                        }
+                    } catch (error) {
+                        await this.callExceptionFilters(error,host,methodFilters,controllerFilters)
                     }
                 })
                 Logger.log(`Mapped {${routePath}, ${httpMethod}} route`, 'RoutesResolver');
@@ -308,25 +336,41 @@ export class NestApplication {
         }
         Logger.log(`Nest application successfully started`, 'NestApplication');
     }
+    getFilterInstance(filter) {
+        if (filter instanceof Function) {
+            const dependencies = this.resolveDependencies(filter);
+            console.log('dependencies',dependencies);
+            return new filter(...dependencies);
+        }
+        return filter;
+    }
+    private callExceptionFilters(error,host,methodFilters,controllerFilters){
+        //按方法过滤器、控制器过滤器、用户配置全局过滤器和默认全局过滤的顺序进行遍历，找到第一个能处理这个错误的过滤器进行处理就可以了
+        const allFilters = [...methodFilters,...controllerFilters,...this.globalHttpExceptionFilters,this.defaultGlobalHttpExceptionFilter];
+        for(const filter of allFilters){
+            let filterInstance = this.getFilterInstance(filter);
+            //取出此异常过滤器关心的异步或者说要处理的异常
+            const exceptions = Reflect.getMetadata('catch',filterInstance.constructor)??[];
+            //如果没有配置catch,或者说当前的错误刚好就是配置的catch的exection的类型或者它的子类
+            if(exceptions.length === 0||exceptions.some(exception=>error instanceof exception)){
+                filterInstance.catch(error,host)
+                break;
+            }
+        }
+    }
     private getResponseMetadata(controller, methodName) {
         const paramsMetaData = Reflect.getMetadata(`params`, controller, methodName) ?? [];
         return paramsMetaData.filter(Boolean).find((param) =>
             param.key === 'Response' || param.key === 'Res' || param.key === 'Next');
     }
-    private resolveParams(instance: any, methodName: string, req: ExpressRequest, res: ExpressResponse, next: NextFunction) {
+    private resolveParams(instance: any, methodName: string, req: ExpressRequest, res: ExpressResponse, next: NextFunction,host) {
         //获取参数的元数据
         const paramsMetaData = Reflect.getMetadata(`params`, instance, methodName) ?? [];
         //[{ parameterIndex: 0, key: 'Req' },{ parameterIndex: 1, key: 'Request' }]
         //此处就是把元数据变成实际的参数
         return paramsMetaData.map((paramMetaData) => {
             const { key, data, factory } = paramMetaData;//{passthrough:true}
-            const ctx = {//因为Nest不但支持http,还支持graphql 微服务 websocket
-                swithToHttp: () => ({
-                    getRequest: () => req,
-                    getResponse: () => req,
-                    getNext: () => next,
-                })
-            }
+            
             switch (key) {
                 case "Request":
                 case "Req":
@@ -349,17 +393,28 @@ export class NestApplication {
                 case "Next":
                     return next;
                 case "DecoratorFactory":
-                    return factory(data, ctx);
+                    return factory(data, host);
                 default:
                     return null;
             }
         })
         //[req,req]
     }
+    async initGlobalFilters(){
+        //获取当前的模块的所有的providers
+        const providers = Reflect.getMetadata('providers',this.module)??[];
+        for(const provider of providers){
+            if(provider.provide === APP_FILTER){
+                const providerInstance = this.getProviderByToken(APP_FILTER,this.module);
+                this.useGlobalFilters(providerInstance)
+            }
+        }
+    }
     //启动HTTP服务器
     async listen(port) {
         await this.initProviders();//注入providers
         await this.initMiddlewares();//初始化中间件配置
+        await this.initGlobalFilters();//初始化全局的过滤器
         await this.init();
         //调用express实例的listen方法启动一个HTTP服务器，监听port端口
         this.app.listen(port, () => {
