@@ -15,3 +15,8 @@
 const a = 1
 a.aaa()
 }, 2000)这种try catch
+
+
+- 这个pipe 是不是加了@injectable 也是可以依赖注入的
+- metatype
+- 老师，像那种 typeorm 之类的包转换成 @nestjs/typeorm后面能讲一下做了哪里事情吗

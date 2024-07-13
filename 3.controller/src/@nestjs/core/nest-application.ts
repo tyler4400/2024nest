@@ -3,7 +3,7 @@ import express, { Express, Request as ExpressRequest, Response as ExpressRespons
 import { Logger } from "./logger";
 import path from 'path'
 import { ArgumentsHost, RequestMethod } from '@nestjs/common'
-import { APP_FILTER } from './constants';
+import { APP_FILTER, DECORATOR_FACTORY } from './constants';
 import {INJECTED_TOKENS, DESIGN_PARAMTYPES} from '../common/constants';
 import {defineModule} from '../common/module.decorator';
 import {GlobalHttpExectionFilter} from '../common/http-exception.filter';
@@ -305,7 +305,6 @@ export class NestApplication {
                     }
                     try {
                         const args = await this.resolveParams(controller, methodName, req, res, next,host);
-                        console.log('args',args)
                         //执行路由处理函数，获取返回值
                         const result = await method.call(controller, ...args);
                         if (result?.url) {
@@ -407,7 +406,7 @@ export class NestApplication {
                 case "Next":
                     value = next;
                     break;
-                case "DecoratorFactory":
+                case DECORATOR_FACTORY:
                     value = factory(data, host);
                     break;
                 default:
@@ -416,7 +415,8 @@ export class NestApplication {
             }
             for(const pipe of [...pipes]){
                 const pipeInstance =  this.getPipeInstance(pipe);
-                value = await pipeInstance.transform(value);
+                const type  = key === DECORATOR_FACTORY?'custom':key.toLowerCase();
+                value = await pipeInstance.transform(value,{type,data});
             }
             return value;
         }))
