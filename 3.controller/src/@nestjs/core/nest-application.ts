@@ -251,8 +251,6 @@ export class NestApplication {
         const constructorParams = Reflect.getMetadata(DESIGN_PARAMTYPES, Clazz) ?? [];
         return constructorParams.map((param, index) => {
             const module = Reflect.getMetadata('module', Clazz);
-            console.log('module',module);
-            console.log('token',injectedTokens[index] ?? param);
             //把每个param中的token默认换成对应的provider值
             return this.getProviderByToken(injectedTokens[index] ?? param, module);
         });
@@ -306,7 +304,8 @@ export class NestApplication {
                         })
                     }
                     try {
-                        const args = this.resolveParams(controller, methodName, req, res, next,host);
+                        const args = await this.resolveParams(controller, methodName, req, res, next,host);
+                        console.log('args',args)
                         //执行路由处理函数，获取返回值
                         const result = await method.call(controller, ...args);
                         if (result?.url) {
@@ -370,42 +369,64 @@ export class NestApplication {
         return paramsMetaData.filter(Boolean).find((param) =>
             param.key === 'Response' || param.key === 'Res' || param.key === 'Next');
     }
-    private resolveParams(instance: any, methodName: string, req: ExpressRequest, res: ExpressResponse, next: NextFunction,host) {
+    private async resolveParams(instance: any, methodName: string, req: ExpressRequest, res: ExpressResponse, next: NextFunction,host) {
         //获取参数的元数据
         const paramsMetaData = Reflect.getMetadata(`params`, instance, methodName) ?? [];
         //[{ parameterIndex: 0, key: 'Req' },{ parameterIndex: 1, key: 'Request' }]
         //此处就是把元数据变成实际的参数
-        return paramsMetaData.map((paramMetaData) => {
-            const { key, data, factory } = paramMetaData;//{passthrough:true}
-            
+        return Promise.all(paramsMetaData.map(async (paramMetaData) => {
+            const { key, data, factory,pipes } = paramMetaData;//{passthrough:true}
+            let value;
             switch (key) {
                 case "Request":
                 case "Req":
-                    return req;
+                    value =  req;
+                    break;
                 case "Query":
-                    return data ? req.query[data] : req.query;
+                    value = data ? req.query[data] : req.query;
+                    break;
                 case "Headers":
-                    return data ? req.headers[data] : req.headers;
+                    value = data ? req.headers[data] : req.headers;
+                    break;
                 case 'Session':
-                    return data ? req.session[data] : req.session;
+                    value = data ? req.session[data] : req.session;
+                    break;
                 case 'Ip':
-                    return req.ip;
+                    value = req.ip;
+                    break;
                 case 'Param':
-                    return data ? req.params[data] : req.params;
+                    value = data ? req.params[data] : req.params;
+                    break;
                 case 'Body':
-                    return data ? req.body[data] : req.body;
+                    value = data ? req.body[data] : req.body;
+                    break;
                 case "Response":
                 case "Res":
-                    return res;
+                    value = res;
+                    break;
                 case "Next":
-                    return next;
+                    value = next;
+                    break;
                 case "DecoratorFactory":
-                    return factory(data, host);
+                    value = factory(data, host);
+                    break;
                 default:
-                    return null;
+                    value = null;
+                    break;
             }
-        })
-        //[req,req]
+            for(const pipe of [...pipes]){
+                const pipeInstance =  this.getPipeInstance(pipe);
+                value = await pipeInstance.transform(value);
+            }
+            return value;
+        }))
+    }
+    private  getPipeInstance(pipe){
+        if(typeof pipe === 'function'){
+            const dependencies = this.resolveDependencies(pipe);//TODO
+            return new pipe(...dependencies);
+        }
+        return pipe;
     }
     async initGlobalFilters(){
         //获取当前的模块的所有的providers

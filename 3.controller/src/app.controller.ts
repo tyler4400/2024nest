@@ -1,13 +1,11 @@
-import { Controller, Get} from '@nestjs/common';
-import {AppService} from './app.service';
-@Controller('app')
+import { 
+   Controller, Get,Param,
+   ParseIntPipe
+} from '@nestjs/common';
+@Controller()
 export class AppController {
-   constructor(private appService:AppService){
-
+   @Get("number/:id")
+   getNumber(@Param('id',ParseIntPipe) id:number){
+      return `The number is ${id}`
    }
-   @Get()
-   index(){
-      return this.appService.getPrefix()+':app';
-   }
-   
 }

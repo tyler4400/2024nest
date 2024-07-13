@@ -17,6 +17,9 @@ async function task() {
 (async function handler() {
     try {
         await task();
+        await 1;
+        await 2;
+        await task()
     } catch (error) {
         console.log('error',error)
     }
