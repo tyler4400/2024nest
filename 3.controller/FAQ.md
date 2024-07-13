@@ -9,3 +9,9 @@
 - registerProvidersFromModule函数定义的时候传了2个形参，
 调用的时候传3个参数(exportToken, module, ...parentModules) 不会报错吗
 
+
+- APPModule中导入的模块中包含的 controller
+- setTimeout(() => {
+const a = 1
+a.aaa()
+}, 2000)这种try catch

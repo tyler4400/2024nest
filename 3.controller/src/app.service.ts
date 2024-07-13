@@ -1,15 +1,12 @@
 import {Inject} from '@nestjs/common';
-import {Config} from './dynamicConfig.module';
 
 export class AppService{
     constructor(
-        @Inject('PREFIX') private readonly prefix:string,
-        @Inject('CONFIG') private readonly config:Config
+        @Inject('PREFIX') private readonly prefix:string
     ){
 
     }
-    getConfig(){
-        return this.prefix+this.config.apiKey;
-
+    getPrefix(){
+        return this.prefix
     }
 }

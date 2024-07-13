@@ -2,8 +2,11 @@ import 'reflect-metadata';
 import express, { Express, Request as ExpressRequest, Response as ExpressResponse, NextFunction } from 'express'
 import { Logger } from "./logger";
 import path from 'path'
-import { ArgumentsHost, RequestMethod,GlobalHttpExectionFilter,defineModule,INJECTED_TOKENS, DESIGN_PARAMTYPES } from '@nestjs/common'
+import { ArgumentsHost, RequestMethod } from '@nestjs/common'
 import { APP_FILTER } from './constants';
+import {INJECTED_TOKENS, DESIGN_PARAMTYPES} from '../common/constants';
+import {defineModule} from '../common/module.decorator';
+import {GlobalHttpExectionFilter} from '../common/http-exception.filter';
 export class NestApplication {
     //在它的内部私用化一个Express实例
     private readonly app: Express = express()
@@ -89,6 +92,7 @@ export class NestApplication {
                 });
             }
         }
+        this.middlewares.length=0;
         return this;
     }
     private normalizeRouteInfo(route) {
@@ -169,6 +173,7 @@ export class NestApplication {
                 }
             }
         }
+        this.initController(module);
     }
     private isModule(exportToken) {
         return exportToken && exportToken instanceof Function && Reflect.getMetadata('isModule', exportToken);
@@ -254,9 +259,9 @@ export class NestApplication {
 
     }
     //配置初始化工作
-    async init() {
+    async initController(module) {
         //取出模块里所有的控制器，然后做好路由配置
-        const controllers = Reflect.getMetadata('controllers', this.module) || [];
+        const controllers = Reflect.getMetadata('controllers',module) || [];
         Logger.log(`AppModule dependencies initialized`, 'InstanceLoader');
         //路由映射的核心是知道 什么样的请求方法什么样的路径对应的哪个处理函数
         for (const Controller of controllers) {
@@ -293,7 +298,7 @@ export class NestApplication {
                 const routePath = path.posix.join('/', prefix, pathMetadata)
                 //配置路由，当客户端以httpMethod方法请求routePath路径的时候，会由对应的函数进行处理
                 this.app[httpMethod.toLowerCase()](routePath, async (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
-                    const host:ArgumentsHost = {//因为Nest不但支持http,还支持graphql 微服务 websocket
+                    const host = {//因为Nest不但支持http,还支持graphql 微服务 websocket
                         switchToHttp: () => ({
                             getRequest: () => req,
                             getResponse: () => res,
@@ -326,6 +331,8 @@ export class NestApplication {
                             //把返回值序列化发回给客户端
                             res.send(result);
                         }
+                        let a ;
+                        console.log(a.toString())
                     } catch (error) {
                         await this.callExceptionFilters(error,host,methodFilters,controllerFilters)
                     }
@@ -415,7 +422,7 @@ export class NestApplication {
         await this.initProviders();//注入providers
         await this.initMiddlewares();//初始化中间件配置
         await this.initGlobalFilters();//初始化全局的过滤器
-        await this.init();
+        await this.initController(this.module);
         //调用express实例的listen方法启动一个HTTP服务器，监听port端口
         this.app.listen(port, () => {
             Logger.log(`Application is running on http://localhost:${port}`, 'NestApplication');
