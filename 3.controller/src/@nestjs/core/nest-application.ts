@@ -2,11 +2,12 @@ import 'reflect-metadata';
 import express, { Express, Request as ExpressRequest, Response as ExpressResponse, NextFunction } from 'express'
 import { Logger } from "./logger";
 import path from 'path'
-import { ArgumentsHost, RequestMethod } from '@nestjs/common'
-import { APP_FILTER, DECORATOR_FACTORY } from './constants';
+import {  RequestMethod } from '@nestjs/common'
+import { APP_FILTER, DECORATOR_FACTORY,APP_PIPE } from './constants';
 import {INJECTED_TOKENS, DESIGN_PARAMTYPES} from '../common/constants';
 import {defineModule} from '../common/module.decorator';
 import {GlobalHttpExectionFilter} from '../common/http-exception.filter';
+import { PipeTransform } from '@nestjs/common';
 export class NestApplication {
     //在它的内部私用化一个Express实例
     private readonly app: Express = express()
@@ -24,9 +25,14 @@ export class NestApplication {
     private readonly defaultGlobalHttpExceptionFilter = new GlobalHttpExectionFilter()
     //这里存放着所有的全局的异常过滤器
     private readonly globalHttpExceptionFilters = []
+    //这里存放着所有的全局管道
+    private readonly globalPipes:PipeTransform[]=[]
     constructor(protected readonly module) {
         this.app.use(express.json());//用来把JSON格式的请求体对象放在req.body上
         this.app.use(express.urlencoded({ extended: true }));//把form表单格式的请求体对象放在req.body
+    }
+    useGlobalPipes(...pipes:PipeTransform[]){
+        this.globalPipes.push(...pipes);
     }
     useGlobalFilters(...filters){
         defineModule(this.module,filters.filter(filter=>filter instanceof Function));
@@ -274,6 +280,8 @@ export class NestApplication {
             const controllerPrototype = Controller.prototype;
             //获取控制器上绑定的异常过滤器数组
             const controllerFilters = Reflect.getMetadata('filters',Controller)?? [];
+            //获取控制器上绑定的管道数组
+            const controllerPipes = Reflect.getMetadata('pipes',Controller)?? [];
             defineModule(this.module,controllerFilters);
             //遍历类的原型上的方法名
             for (const methodName of Object.getOwnPropertyNames(controllerPrototype)) {
@@ -289,6 +297,9 @@ export class NestApplication {
                 const headers = Reflect.getMetadata('headers', method) ?? [];
                 //获取方法上绑定的异常过滤器数组
                 const methodFilters = Reflect.getMetadata('filters',method)?? [];
+                //获取方法上绑定的管道数组
+               const methodPipes = Reflect.getMetadata('pipes',method)?? [];
+               const pipes = [...controllerPipes,...methodPipes];
                 defineModule(this.module,methodFilters);
                 //如果方法名不存在，则不处理
                 if (!httpMethod) continue;
@@ -304,7 +315,7 @@ export class NestApplication {
                         })
                     }
                     try {
-                        const args = await this.resolveParams(controller, methodName, req, res, next,host);
+                        const args = await this.resolveParams(controller, methodName, req, res, next,host,pipes);
                         //执行路由处理函数，获取返回值
                         const result = await method.call(controller, ...args);
                         if (result?.url) {
@@ -329,8 +340,6 @@ export class NestApplication {
                             //把返回值序列化发回给客户端
                             res.send(result);
                         }
-                        let a ;
-                        console.log(a.toString())
                     } catch (error) {
                         await this.callExceptionFilters(error,host,methodFilters,controllerFilters)
                     }
@@ -368,13 +377,13 @@ export class NestApplication {
         return paramsMetaData.filter(Boolean).find((param) =>
             param.key === 'Response' || param.key === 'Res' || param.key === 'Next');
     }
-    private async resolveParams(instance: any, methodName: string, req: ExpressRequest, res: ExpressResponse, next: NextFunction,host) {
+    private async resolveParams(instance: any, methodName: string, req: ExpressRequest, res: ExpressResponse, next: NextFunction,host,pipes:PipeTransform[]) {
         //获取参数的元数据
         const paramsMetaData = Reflect.getMetadata(`params`, instance, methodName) ?? [];
         //[{ parameterIndex: 0, key: 'Req' },{ parameterIndex: 1, key: 'Request' }]
         //此处就是把元数据变成实际的参数
         return Promise.all(paramsMetaData.map(async (paramMetaData) => {
-            const { key, data, factory,pipes } = paramMetaData;//{passthrough:true}
+            const { key, data, factory,pipes:paramPipes,metatype } = paramMetaData;//{passthrough:true}
             let value;
             switch (key) {
                 case "Request":
@@ -413,10 +422,10 @@ export class NestApplication {
                     value = null;
                     break;
             }
-            for(const pipe of [...pipes]){
+            for(const pipe of [...this.globalPipes,...pipes,...paramPipes]){
                 const pipeInstance =  this.getPipeInstance(pipe);
                 const type  = key === DECORATOR_FACTORY?'custom':key.toLowerCase();
-                value = await pipeInstance.transform(value,{type,data});
+                value = await pipeInstance.transform(value,{type,data,metatype});
             }
             return value;
         }))
@@ -438,11 +447,22 @@ export class NestApplication {
             }
         }
     }
+    private initGlobalPipes(){
+        //获取当前的模块的所有的providers
+        const providers = Reflect.getMetadata('providers',this.module)??[];
+        for(const provider of providers){
+            if(provider.provide === APP_PIPE){
+                const providerInstance = this.getProviderByToken(APP_PIPE,this.module);
+                this.useGlobalPipes(providerInstance)
+            }
+        }
+    }
     //启动HTTP服务器
     async listen(port) {
         await this.initProviders();//注入providers
         await this.initMiddlewares();//初始化中间件配置
         await this.initGlobalFilters();//初始化全局的过滤器
+        await this.initGlobalPipes();
         await this.initController(this.module);
         //调用express实例的listen方法启动一个HTTP服务器，监听port端口
         this.app.listen(port, () => {

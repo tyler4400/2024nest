@@ -1,20 +1,28 @@
 import { 
-   Controller, Get,Param,Query,Body,
+   Controller, Get,Param,Query,Body,Post,
    ParseIntPipe,
    ParseFloatPipe,
    ParseBoolPipe,
    ParseArrayPipe,
    ParseUUIDPipe,
    ParseEnumPipe,
-   DefaultValuePipe
+   DefaultValuePipe,
+   UsePipes
 } from '@nestjs/common';
 import { CustomPipe } from './custom.pipe';
+import { ZodValidationPipe } from './zod-validation.pipe';
+import { CreateCatDto,createCatSchema } from './create-cat.dto';
+import { CreateUserDto } from './create-user.dto';
 enum Roles{
    Admin='Admin',
    VIP="VIP"
 }
 @Controller()
 export class AppController {
+   @Get("hello/:id")
+   getHello(@Param('id') id:string){
+      return id+'-hello';
+   }
    @Get("number/:id")
    getNumber(@Param('id',ParseIntPipe) id:number){
       return `The number is ${id}`
@@ -46,5 +54,16 @@ export class AppController {
    @Get("custom/:value")
    getCustom(@Param('value',CustomPipe) value:string,age:number){
       return `value:  ${value}`
+   }
+   @Post('cats')
+   @UsePipes(new ZodValidationPipe(createCatSchema))
+   async createCat(@Body() createCatDto:CreateCatDto){
+      console.log('createCatDto',createCatDto)
+      return 'This action adds a new cat';
+   }
+   @Post('create/user')
+   async createUser(@Body() createUserDto:CreateUserDto){
+      console.log('createUserDto',createUserDto)
+      return 'This action adds a new user';
    }
 }
