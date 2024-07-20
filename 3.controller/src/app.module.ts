@@ -1,25 +1,14 @@
-import {MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
-import { AppController } from './app.controller';
+import { Module } from "@nestjs/common";
 import {AccountController} from './account.controller';
-import {MyPipe} from './my.pipe';
-import { APP_PIPE } from "@nestjs/core";
-import {AuthMiddleware} from './auth.middleware';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from "./auth.guard";
 @Module({
-    controllers: [AppController,AccountController],
+    controllers: [AccountController],
     providers:[
         {
-            provide:'PREFIX',
-            useValue:'prefix'
-        },
-        {
-            provide:APP_PIPE,
-            useClass:MyPipe
+            provide:APP_GUARD,
+            useClass:AuthGuard
         }
     ]
 })
-export class AppModule implements NestModule{
-    configure(consumer: MiddlewareConsumer) {
-        consumer.apply(AuthMiddleware).forRoutes('*');
-    }
-    
-}
+export class AppModule {}

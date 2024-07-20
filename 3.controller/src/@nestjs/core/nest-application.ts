@@ -2,12 +2,15 @@ import 'reflect-metadata';
 import express, { Express, Request as ExpressRequest, Response as ExpressResponse, NextFunction } from 'express'
 import { Logger } from "./logger";
 import path from 'path'
-import {  RequestMethod } from '@nestjs/common'
-import { APP_FILTER, DECORATOR_FACTORY,APP_PIPE } from './constants';
+import {  ForbiddenException, RequestMethod } from '@nestjs/common'
+import { APP_FILTER, DECORATOR_FACTORY,APP_PIPE,FORBODDEN_RESOURCE, APP_GUARD} from './constants';
 import {INJECTED_TOKENS, DESIGN_PARAMTYPES} from '../common/constants';
 import {defineModule} from '../common/module.decorator';
 import {GlobalHttpExectionFilter} from '../common/http-exception.filter';
 import { PipeTransform } from '@nestjs/common';
+import { ExecutionContext } from '../common';
+import { CanActivate } from '@nestjs/common';
+import { Reflector } from './reflector';
 export class NestApplication {
     //在它的内部私用化一个Express实例
     private readonly app: Express = express()
@@ -27,6 +30,7 @@ export class NestApplication {
     private readonly globalHttpExceptionFilters = []
     //这里存放着所有的全局管道
     private readonly globalPipes:PipeTransform[]=[]
+    private readonly globalGuards=[]
     constructor(protected readonly module) {
         this.app.use(express.json());//用来把JSON格式的请求体对象放在req.body上
         this.app.use(express.urlencoded({ extended: true }));//把form表单格式的请求体对象放在req.body
@@ -118,8 +122,13 @@ export class NestApplication {
         routePath = path.posix.join('/', routePath);
         return { routePath, routeMethod }
     }
+    private addDefaultProviders(){
+        //注册系统 内部默认的一些Provider,一些提供者
+        this.addProvider(Reflector,this.module,true);
+    }
     //初始化提供化
     async initProviders() {//重写注册provider的流程
+        this.addDefaultProviders();
         //获取模块导入的元数据
         const imports = Reflect.getMetadata('imports', this.module) ?? [];
         //遍历所有的导入的模块
@@ -260,7 +269,22 @@ export class NestApplication {
             //把每个param中的token默认换成对应的provider值
             return this.getProviderByToken(injectedTokens[index] ?? param, module);
         });
-
+    }
+    private  getGuardInstance(guard){
+        if(typeof guard === 'function'){
+            const dependencies = this.resolveDependencies(guard);
+            return new guard(...dependencies);
+        }
+        return guard;
+    }
+    async callGuards(guards:CanActivate[],context:ExecutionContext){
+        for(const guard of guards){
+           const guardInstance = this.getGuardInstance(guard);
+           const canActivate =  await guardInstance.canActivate(context);
+           if(!canActivate){
+            throw new ForbiddenException(FORBODDEN_RESOURCE);
+           }
+        }
     }
     //配置初始化工作
     async initController(module) {
@@ -282,6 +306,8 @@ export class NestApplication {
             const controllerFilters = Reflect.getMetadata('filters',Controller)?? [];
             //获取控制器上绑定的管道数组
             const controllerPipes = Reflect.getMetadata('pipes',Controller)?? [];
+            //获取控制器上绑定的守卫数组
+            const controllerGuards = Reflect.getMetadata('guards',Controller)?? [];
             defineModule(this.module,controllerFilters);
             //遍历类的原型上的方法名
             for (const methodName of Object.getOwnPropertyNames(controllerPrototype)) {
@@ -299,7 +325,10 @@ export class NestApplication {
                 const methodFilters = Reflect.getMetadata('filters',method)?? [];
                 //获取方法上绑定的管道数组
                const methodPipes = Reflect.getMetadata('pipes',method)?? [];
+               //获取方法上绑定的守卫数组
+               const methodGuards = Reflect.getMetadata('guards',method)?? [];
                const pipes = [...controllerPipes,...methodPipes];
+               const guards = [...this.globalGuards,...controllerGuards,...methodGuards];
                 defineModule(this.module,methodFilters);
                 //如果方法名不存在，则不处理
                 if (!httpMethod) continue;
@@ -314,7 +343,13 @@ export class NestApplication {
                             getNext: () => next,
                         })
                     }
+                    const context:ExecutionContext = {
+                        ...host,
+                        getClass:()=>Controller,
+                        getHandler:()=>method
+                    }
                     try {
+                        await this.callGuards(guards,context);
                         const args = await this.resolveParams(controller, methodName, req, res, next,host,pipes);
                         //执行路由处理函数，获取返回值
                         const result = await method.call(controller, ...args);
@@ -457,12 +492,25 @@ export class NestApplication {
             }
         }
     }
+    initGlobalGuards(){
+        const providers = Reflect.getMetadata('providers',this.module)??[];
+        for(const provider of providers){
+            if(provider.provide === APP_GUARD){
+                const providerInstance = this.getProviderByToken(APP_GUARD,this.module);
+                this.useGlobalGuards(providerInstance)
+            }
+        }
+    }
+    useGlobalGuards(...guards){
+        this.globalGuards.push(...guards);
+    }
     //启动HTTP服务器
     async listen(port) {
         await this.initProviders();//注入providers
         await this.initMiddlewares();//初始化中间件配置
         await this.initGlobalFilters();//初始化全局的过滤器
         await this.initGlobalPipes();
+        await this.initGlobalGuards();//初始化全局守卫
         await this.initController(this.module);
         //调用express实例的listen方法启动一个HTTP服务器，监听port端口
         this.app.listen(port, () => {
