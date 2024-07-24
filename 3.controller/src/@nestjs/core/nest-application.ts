@@ -12,6 +12,7 @@ import { ExecutionContext } from '../common';
 import { CanActivate } from '@nestjs/common';
 import { Reflector } from './reflector';
 import { Observable, from, mergeMap, of } from 'rxjs';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 export class NestApplication {
     //在它的内部私用化一个Express实例
     private readonly app: Express = express()
@@ -32,6 +33,14 @@ export class NestApplication {
     //这里存放着所有的全局管道
     private readonly globalPipes: PipeTransform[] = []
     private readonly globalGuards = []
+    //存放全局拦截器
+    private readonly globalInterceptors = []
+    private readonly globalProviderMap = new Map([
+        [APP_GUARD, new Map()],//全局守卫
+        [APP_PIPE, new Map()],//全局管道 
+        [APP_FILTER, new Map()],//全局过滤器
+        [APP_INTERCEPTOR, new Map()]//全局拦截器
+    ])
     constructor(protected readonly module) {
         this.app.use(express.json());//用来把JSON格式的请求体对象放在req.body上
         this.app.use(express.urlencoded({ extended: true }));//把form表单格式的请求体对象放在req.body
@@ -164,7 +173,20 @@ export class NestApplication {
         const providers = Reflect.getMetadata('providers', this.module) ?? [];
         //遍历并添加每个提供者
         for (const provider of providers) {
-            this.addProvider(provider, this.module);
+            this.processProvider(provider, this.module);
+        }
+    }
+    private processProvider(provider, module) {
+        //如果这是一个全局的token对应的proider
+        if (this.globalProviderMap.has(provider.provide)) {
+            let instanceMap = this.globalProviderMap.get(provider.provide);
+            const { useClass } = provider;
+            if (!instanceMap.has(useClass)) {
+                const instance = new useClass(...this.resolveDependencies(useClass));
+                instanceMap.set(useClass, instance)
+            }
+        } else {
+            this.addProvider(provider, module)
         }
     }
     private registerProvidersFromModule(module, ...parentModules) {
@@ -356,7 +378,7 @@ export class NestApplication {
                 const methodInterceptors = Reflect.getMetadata('interceptors', method) ?? [];
                 const pipes = [...controllerPipes, ...methodPipes];
                 const guards = [...this.globalGuards, ...controllerGuards, ...methodGuards];
-                const interceptors = [...controllerInterceptors, ...methodInterceptors];
+                const interceptors = [...this.globalInterceptors, ...controllerInterceptors, ...methodInterceptors];
                 defineModule(this.module, methodFilters);
                 //如果方法名不存在，则不处理
                 if (!httpMethod) continue;
@@ -381,8 +403,8 @@ export class NestApplication {
                         const args = await this.resolveParams(controller, methodName, context, host, pipes);
                         this.callInterceptors(controller, method, args, interceptors, context, host, pipes)
                             .subscribe({
-                                next:(result) => {
-                                    console.log('subscribe.result',result)
+                                next: (result) => {
+                                    console.log('subscribe.result', result)
                                     if (result?.url) {
                                         return res.redirect(result.statusCode || 302, result.url);
                                     }
@@ -406,7 +428,7 @@ export class NestApplication {
                                         res.send(result);
                                     }
                                 },
-                                error:error=>this.callExceptionFilters(error, host, methodFilters, controllerFilters)
+                                error: error => this.callExceptionFilters(error, host, methodFilters, controllerFilters)
                             });
                     } catch (error) {
                         await this.callExceptionFilters(error, host, methodFilters, controllerFilters)
@@ -541,13 +563,32 @@ export class NestApplication {
     useGlobalGuards(...guards) {
         this.globalGuards.push(...guards);
     }
+    useGlobalInterceptors(...interceptors) {
+        this.globalInterceptors.push(...interceptors);
+    }
+    private initGlobalProviders() {
+        for (const [provide, instanceMap] of this.globalProviderMap) {
+            switch (provide) {
+                case APP_INTERCEPTOR:
+                    this.useGlobalInterceptors(...instanceMap.values())
+                    break;
+                case APP_GUARD:
+                    this.useGlobalGuards(...instanceMap.values())
+                    break;
+                case APP_PIPE:
+                    this.useGlobalPipes(...instanceMap.values())
+                    break;
+                case APP_FILTER:
+                    this.useGlobalFilters(...instanceMap.values())
+                    break;
+            }
+        }
+    }
     //启动HTTP服务器
     async listen(port) {
         await this.initProviders();//注入providers
         await this.initMiddlewares();//初始化中间件配置
-        await this.initGlobalFilters();//初始化全局的过滤器
-        await this.initGlobalPipes();
-        await this.initGlobalGuards();//初始化全局守卫
+        await this.initGlobalProviders();
         await this.initController(this.module);
         //调用express实例的listen方法启动一个HTTP服务器，监听port端口
         this.app.listen(port, () => {

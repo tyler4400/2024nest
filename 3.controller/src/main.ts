@@ -1,9 +1,23 @@
 import { NestFactory } from "@nestjs/core";
 import {AppModule} from './app.module';
-//import { AuthGuard } from "./auth.guard";
+
 async function bootstrap(){
     const app = await NestFactory.create(AppModule);
-    //app.useGlobalGuards(new AuthGuard())
     await app.listen(3000);
 }
 bootstrap();
+/**
+Before6...
+Before5...
+Before4...
+Before3...
+Before2...
+Before1...
+pay...
+After1... 2ms
+After2... 3ms
+After3... 3ms
+After4... 5ms
+After5... 7ms
+After6... 8ms
+ */

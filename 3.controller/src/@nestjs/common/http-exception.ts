@@ -24,13 +24,13 @@ export class ForbiddenException extends HttpException{
         super({message,error,statusCode:HttpStatus.FORBIDDEN},HttpStatus.FORBIDDEN)
     }
 }
-export class BadGateWayException extends HttpException{
-    constructor(message,error?){
-        super({message,error,statusCode:HttpStatus.BAD_GATEWAY},HttpStatus.BAD_GATEWAY)
+export class BadGatewayException extends HttpException{
+    constructor(message?,error?){
+        super({message:message??'Bad Gateway',error,statusCode:HttpStatus.BAD_GATEWAY},HttpStatus.BAD_GATEWAY)
     }
 }
 export class RequestTimeoutException extends HttpException{
-    constructor(message,error?){
-        super({message,error,statusCode:HttpStatus.REQUEST_TIMEOUT},HttpStatus.REQUEST_TIMEOUT)
+    constructor(message?,error?){
+        super({message:message??'Request Timeout',error,statusCode:HttpStatus.REQUEST_TIMEOUT},HttpStatus.REQUEST_TIMEOUT)
     }
 }
