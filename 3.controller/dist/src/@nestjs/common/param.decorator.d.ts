@@ -1,0 +1,13 @@
+import 'reflect-metadata';
+export declare const createParamDecorator: (keyOrFactory: String | Function) => (data?: any, ...pipes: any[]) => (target: any, propertyKey: string, parameterIndex: number) => void;
+export declare const Request: (data?: any, ...pipes: any[]) => (target: any, propertyKey: string, parameterIndex: number) => void;
+export declare const Req: (data?: any, ...pipes: any[]) => (target: any, propertyKey: string, parameterIndex: number) => void;
+export declare const Query: (data?: any, ...pipes: any[]) => (target: any, propertyKey: string, parameterIndex: number) => void;
+export declare const Headers: (data?: any, ...pipes: any[]) => (target: any, propertyKey: string, parameterIndex: number) => void;
+export declare const Session: (data?: any, ...pipes: any[]) => (target: any, propertyKey: string, parameterIndex: number) => void;
+export declare const Ip: (data?: any, ...pipes: any[]) => (target: any, propertyKey: string, parameterIndex: number) => void;
+export declare const Param: (data?: any, ...pipes: any[]) => (target: any, propertyKey: string, parameterIndex: number) => void;
+export declare const Body: (data?: any, ...pipes: any[]) => (target: any, propertyKey: string, parameterIndex: number) => void;
+export declare const Response: (data?: any, ...pipes: any[]) => (target: any, propertyKey: string, parameterIndex: number) => void;
+export declare const Res: (data?: any, ...pipes: any[]) => (target: any, propertyKey: string, parameterIndex: number) => void;
+export declare const Next: (data?: any, ...pipes: any[]) => (target: any, propertyKey: string, parameterIndex: number) => void;

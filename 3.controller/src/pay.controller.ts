@@ -11,3 +11,10 @@ export class PayController{
        return 'pay'
     }
 }
+/**
+Before2...
+Before1...
+pay...
+After1... 3ms
+After2... 6ms
+ */

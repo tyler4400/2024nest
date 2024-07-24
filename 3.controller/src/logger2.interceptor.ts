@@ -1,8 +1,7 @@
-import { CallHandler, ExecutionContext, NestInterceptor } from "@nestjs/common";
-import { Observable } from "rxjs";
+import { ExecutionContext, NestInterceptor } from "@nestjs/common";
 import {tap} from 'rxjs/operators'
 export class Logging2Interceptor implements NestInterceptor{
-    intercept(context: ExecutionContext, next: CallHandler<any>): Observable<any>  {
+    async intercept(context: ExecutionContext, next)  {
         console.log('Before2...')
         const now = Date.now();
         return next.handle().pipe(tap(()=>{

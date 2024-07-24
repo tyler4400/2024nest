@@ -1,0 +1,1 @@
+{"version":3,"file":"catch.decorator.js","sourceRoot":"","sources":["../../../../src/@nestjs/common/catch.decorator.ts"],"names":[],"mappings":";;;AAAA,4BAA0B;AAC1B,SAAgB,KAAK,CAAC,GAAG,UAAU;IAC/B,OAAO,CAAC,MAAe,EAAC,EAAE;QACtB,OAAO,CAAC,cAAc,CAAC,OAAO,EAAC,UAAU,EAAC,MAAM,CAAC,CAAC;IACtD,CAAC,CAAA;AACL,CAAC;AAJD,sBAIC"}
