@@ -6,3 +6,4 @@ export * from './parse-uuid.pipe';
 export * from './parse-enum.pipe';
 export * from './parse-default.pipe';
 export * from './validation-pipe';
+export * from './file';

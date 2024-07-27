@@ -2,6 +2,11 @@ import 'reflect-metadata';
 export const createParamDecorator = (keyOrFactory: String|Function) => {
     //target控制器原型 propertyKey 方法名handleRequest  parameterIndex 先走1再走0
     return (data?:any,...pipes:any[]) => (target: any, propertyKey: string, parameterIndex: number) => {   
+        //如果data不是字符串，说明它不是一个对象的属性名而则一个管道
+        if(data && typeof data !== 'string'){
+            pipes =[data,...pipes];
+            data = null;
+        }
         //给控制器类的原型的propertyKey也就是handleRequest方法属性上添加元数据
         //属性名是params:handleRequest 值是一个数组，数组里应该放置数据，表示哪个位置使用啊个装饰器
         const existingParameters = Reflect.getMetadata(`params`,target,propertyKey)??[];
@@ -27,3 +32,5 @@ export const Body = createParamDecorator('Body');
 export const Response = createParamDecorator('Response');
 export const Res = createParamDecorator('Res');
 export const Next = createParamDecorator('Next');
+export const UploadedFile = createParamDecorator('UploadedFile');
+export const UploadedFiles = createParamDecorator('UploadedFiles');

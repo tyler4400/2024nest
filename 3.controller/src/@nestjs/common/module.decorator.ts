@@ -18,9 +18,7 @@ export function Module(metadata:ModuleMetadata):ClassDecorator{
       defineModule(target,metadata.controllers);
       Reflect.defineMetadata('controllers',metadata.controllers,target);
        //我得知道此providers属于哪个模块 其实这行代码我们尚未使用 target就是module
-      defineModule(target,
-        (metadata.providers??[]).map(provider=>provider instanceof Function?provider:provider.useClass)
-        .filter(Boolean));
+      defineProvidersModule(target,metadata.providers)
       Reflect.defineMetadata('providers',metadata.providers,target);
       //在类上保存exports
       Reflect.defineMetadata('exports',metadata.exports,target);
@@ -28,7 +26,11 @@ export function Module(metadata:ModuleMetadata):ClassDecorator{
       Reflect.defineMetadata('imports',metadata.imports,target);
     }
 }
-
+export function defineProvidersModule(nestModule,providers=[]){
+  defineModule(nestModule,
+    (providers??[]).map(provider=>provider instanceof Function?provider:provider.useClass)
+    .filter(Boolean));
+}
 export function defineModule(nestModule,targets=[]){
   //遍历targets数组，为每个元素添加元数据，key是nestModule,值是对应的模块
   targets.forEach(target=>{

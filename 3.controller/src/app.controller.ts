@@ -9,7 +9,7 @@ import {
    DefaultValuePipe,
    UsePipes
 } from '@nestjs/common';
-import { CustomPipe } from './custom.pipe';
+import { CustomPipe } from './pipes/custom.pipe';
 import { ZodValidationPipe } from './zod-validation.pipe';
 import { CreateCatDto,createCatSchema } from './create-cat.dto';
 import { CreateUserDto } from './create-user.dto';

@@ -1,5 +1,5 @@
-import {Reqeust,Response,NextFunction} from 'express';
+import {Request,Response,NextFunction} from 'express';
 export interface NestMiddleware{
-    use(req: Reqeust, res: Response, next: NextFunction)
+    use(req: Request, res: Response, next: NextFunction)
 }
 
