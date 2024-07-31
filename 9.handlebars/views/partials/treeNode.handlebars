@@ -1,0 +1,10 @@
+<div>
+    {{name}}
+    {{#if children}}
+      <div style="padding-left:{{multiply depth 20}}px">
+        {{#each children}}
+        {{> treeNode this depth=(increase ../depth)}}
+        {{/each}}
+      </div>
+    {{/if}}
+</div>

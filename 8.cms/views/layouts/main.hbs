@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap demo</title>
+    <link href="/style/bootstrap.min.css"  rel="stylesheet">
+  </head>
+  <body>
+    {{> header }}
+    <div class="container-fluid">
+        <div class="row">
+            {{> sidebar}}
+            <div class="col-md-9 col-lg-10">
+                <div class="container mt-4">
+                    {{{body}}}
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/js/bootstrap.bundle.min.js" ></script>
+  </body>
+</html>
