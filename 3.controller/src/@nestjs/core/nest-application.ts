@@ -195,22 +195,20 @@ export class NestApplication {
         const importedProviders = Reflect.getMetadata('providers',module)??[];
         const exports = Reflect.getMetadata('exports',module)??[];
         for(let importedProvider of importedProviders){
-            //获取此provider的token
-            const exportToken = importedProvider.provide ?? importedProvider;
-            //如果此token在导出token数中存在，则说明此provider被 导出了
-            if(exports.includes(exportToken)){
-                if(this.isModule(exportToken)){
-                    this.registerProvidersFromModule(exportToken,module,...parentModules);
-                }else{
-                    [module,...parentModules].forEach(module=>{
-                        this.processProvider(importedProvider,module);
-                    });
-                }
+            const providerToken = importedProvider.provide ?? importedProvider;
+            if(exports.includes(providerToken)){
+                [module,...parentModules].forEach(module=>{
+                    this.processProvider(importedProvider,module);
+                });
             }else{
                 this.processProvider(importedProvider,module);
             }
         }
-        
+        for(let exportToken of exports){
+            if(this.isModule(exportToken)){
+                this.registerProvidersFromModule(exportToken,module,...parentModules);
+            }
+        }
         this.initController(module);
     }
     private isModule(exportToken) {
