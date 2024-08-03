@@ -1,5 +1,5 @@
-import {Entity,Column,PrimaryGeneratedColumn,CreateDateColumn,UpdateDateColumn,OneToOne} from 'typeorm'
-import { Profile } from './Profile'
+import {Entity,Column,PrimaryGeneratedColumn,CreateDateColumn,UpdateDateColumn,OneToOne, OneToMany} from 'typeorm'
+import { Order } from './Order'
 //使用Entity可以将User类标识为一个实体，并可以通过name属性指定表名
 @Entity()//一个实体对应数据库里一张表
 export class User{
@@ -19,6 +19,6 @@ export class User{
   createdAt:Date
   @UpdateDateColumn()
   updatedAt:Date
-  @OneToOne(()=>Profile,(profile)=>profile.user)
-  profile:Profile
+  @OneToMany(()=>Order,(order)=>order.user)
+  orders:Order[]
 }
