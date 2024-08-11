@@ -4,6 +4,10 @@ export class Role{
   @PrimaryGeneratedColumn()
   id:number
   @Column({length:50})
+  email:string
+  @Column()
+  age:number
+  @CreateDateColumn()
   name:string
   @CreateDateColumn()
   createdAt:Date

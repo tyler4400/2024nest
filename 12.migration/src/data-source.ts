@@ -8,7 +8,7 @@ export const AppDataSource = new DataSource({
     username:'root',
     password:'root',
     database:'orm',
-    synchronize:true,
+    synchronize:false,
     logging:false,
     entities:[Role],
     migrations:['./src/migrations/*.ts'],
