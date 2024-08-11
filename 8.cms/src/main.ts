@@ -5,6 +5,7 @@ import * as session from 'express-session';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import {join} from 'path';
 import {engine} from 'express-handlebars';
+import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   //配置静态文件根目录
@@ -30,6 +31,7 @@ async function bootstrap() {
       maxAge: 1000 * 60 * 60 * 24 * 7
     }
   }));
+  app.useGlobalPipes(new ValidationPipe({transform:true}));
   await app.listen(3000);
 }
 bootstrap();
