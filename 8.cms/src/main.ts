@@ -6,6 +6,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import {join} from 'path';
 import {engine} from 'express-handlebars';
 import { ValidationPipe } from '@nestjs/common';
+import {DocumentBuilder, SwaggerModule} from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   //配置静态文件根目录
@@ -32,6 +33,22 @@ async function bootstrap() {
     }
   }));
   app.useGlobalPipes(new ValidationPipe({transform:true}));
+  //创建一个新的DocumentBuild实例，用于配置swagger文档
+  const config = new DocumentBuilder()
+  .setTitle('CMS API')
+  .setDescription('CMS API 描述')
+  .setVersion("1.0")
+  .addTag('CMS')
+  .addCookieAuth('connect.sid')//添加cookie认证方式，cookie的名称为connect.sid
+  .addBearerAuth({//添加Bearer认证方式 在请求头里添加 Authorization: Bearer xxx
+    type:'http',
+    scheme:'bearer'
+  })
+  .build();
+  //使用配置对象创建Swagger文档 
+  const document = SwaggerModule.createDocument(app,config);
+  //设置Swagger模块的路径和文档对象，将SwaggerUI绑定到api-doc路径
+  SwaggerModule.setup('api-doc',app,document);
   await app.listen(3000);
 }
 bootstrap();

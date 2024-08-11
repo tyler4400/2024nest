@@ -6,7 +6,10 @@ import {User} from './entities/user.entity';
 import { UserService } from './services/user.service';
 @Global()
 @Module({
-    providers:[ConfigurationService,UserService],
+    providers:[
+        ConfigurationService,
+        UserService
+    ],
     exports:[ConfigurationService,UserService],
     imports:[
         ConfigModule.forRoot({isGlobal:true}),

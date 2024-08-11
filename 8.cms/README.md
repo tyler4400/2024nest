@@ -29,3 +29,8 @@ npm install cookie-parser express-session @nestjs/platform-express
 - Dto 数据传输对象 当我们的客户向服务器发送数据的时候传递的对象叫DTO
 - 服务器在处理请求的时候要操作数据库，操作的是entity实体
 - 最后服务器向客户端返回结果的叫vo,这个vo也可以使用entity来使用
+
+
+## 解决这个问题有两种办法 
+1. 封装专门的VO
+2. 可以使用class-transformer自动转换
