@@ -1,0 +1,20 @@
+{
+  "name": "12.migration",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "typeorm": "typeorm"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "mysql2": "^3.11.0",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.20"
+  },
+  "devDependencies": {
+    "@types/node": "^22.2.0"
+  }
+}

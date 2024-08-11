@@ -1,7 +1,6 @@
-import {Entity,Column,PrimaryGeneratedColumn,CreateDateColumn,UpdateDateColumn,OneToOne, OneToMany} from 'typeorm'
-import { Order } from './Order'
-//使用Entity可以将User类标识为一个实体，并可以通过name属性指定表名
-@Entity()//一个实体对应数据库里一张表
+import {Entity,Column,PrimaryGeneratedColumn,CreateDateColumn,UpdateDateColumn,ManyToMany, JoinTable} from 'typeorm'
+import { Role } from './Role'
+@Entity()
 export class User{
   @PrimaryGeneratedColumn()
   id:number
@@ -19,6 +18,10 @@ export class User{
   createdAt:Date
   @UpdateDateColumn()
   updatedAt:Date
-  @OneToMany(()=>Order,(order)=>order.user)
-  orders:Order[]
+  @ManyToMany(()=>Role,(role)=>role.users,{
+    cascade:true
+  })
+  @JoinTable()//role_users_user
+  //@JoinTable()//user_roles_role  role_users_user   User表名_roles属性名_Role表名
+  roles:Role[]
 }

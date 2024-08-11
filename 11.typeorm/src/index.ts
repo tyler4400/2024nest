@@ -1,26 +1,54 @@
 import { AppDataSource } from "./data-source";
-import {User} from './entity/User';
-import {Order} from './entity/Order';
-//查询至少买过一个商品的用户
-AppDataSource.initialize().then(async ()=>{
-  const userRepository = AppDataSource.getRepository(User);
-  const users = await userRepository.createQueryBuilder('user')
-      .where(qb=>{
-         const subQuery = qb.subQuery()
-         .select('order.userId')
-         .from(Order,'order')
-         .getQuery()
-         return `user.id IN `+subQuery
-      })
-      .getMany();
-  console.log(users)
-}).finally(()=>process.exit(9))
-//select * from user where user.id in (select `order`.userId from `order`)
-/**
-SELECT `user`.`firstName` AS `user_firstName`,
- `user`.`lastName` AS `user_lastName`,
-  SUM(`order`.`amount`) AS `totalAmount`
-   FROM `user` `user` INNER JOIN `order` `order` ON `order`.`userId`=`user`.`id` 
-   WHERE `user`.`isActive`=1 
-   AND `order`.`product`='Product1' GROUP BY `user`.`id` ORDER BY totalAmount DESC
- */
+import { Category } from './entity/Category';
+AppDataSource.initialize().then(async () => {
+    const categoryRepository = AppDataSource.getTreeRepository(Category);
+    //保存根节点
+    const root = new Category();
+    root.name = 'Root';
+    await categoryRepository.save(root);
+
+    const child1 = new Category();
+    child1.name = 'Child1';
+    child1.parent = root
+    await categoryRepository.save(child1);
+
+    const grandson1 = new Category();
+    grandson1.name = 'Child1-Grandson1';
+    grandson1.parent = child1
+    await categoryRepository.save(grandson1);
+
+
+    const child2 = new Category();
+    child2.name = 'Child2';
+    child2.parent = root
+    await categoryRepository.save(child2);
+
+    //查询所有的分类
+    const find = await categoryRepository.find();
+    console.log('find', find);
+    //查询分类树
+    const findTrees = await categoryRepository.findTrees();
+    console.log('findTrees', findTrees);
+    //查询根分类
+    const findRoots = await categoryRepository.findRoots();
+    console.log('findRoots', findRoots);
+    //查询祖先树
+    const findAncestorsTree = await categoryRepository.findAncestorsTree(grandson1);
+    console.log('findAncestorsTree', findAncestorsTree);
+    //查询祖先
+    const findAncestors = await categoryRepository.findAncestors(grandson1);
+    console.log('findAncestors', findAncestors);
+    //查询后代树
+    const findDescendantsTree = await categoryRepository.findDescendantsTree(root);
+    console.log('findDescendantsTree', findDescendantsTree);
+    //查询后代
+    const findDescendants = await categoryRepository.findDescendants(root);
+    console.log('findDescendants', findDescendants);
+    //查询后代的数量
+    const countDescendants = await categoryRepository.countDescendants(root);
+    console.log('countDescendants', countDescendants);
+    //查询祖先的数量
+    const countAncestors = await categoryRepository.countAncestors(grandson1);
+    console.log('countDescendants', countAncestors);
+
+})
