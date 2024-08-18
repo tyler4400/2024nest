@@ -1,18 +1,28 @@
-import { Controller,Get,Render } from '@nestjs/common';
-import { ApiCookieAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Controller,Get,Render,Post, Redirect,Body, UseFilters, HttpException } from '@nestjs/common';
+import { CreateUserDto } from 'src/shared/dtos/user.dto';
 import { UserService } from 'src/shared/services/user.service';
-
+import {AdminExceptionFilter} from '../filters/admin-exception-filter';
+@UseFilters(AdminExceptionFilter)
 @Controller('admin/users')
-@ApiTags('admin/users')
 export class UserController {
-    constructor(private readonly userService:UserService){
-
-    }
+    constructor(private readonly userService:UserService){}
     @Get()
-    @ApiCookieAuth()
-    @ApiOperation({ summary: '获取所有的用户列表' })
+    @Render('user/user-list')
     async findAll(){
         const users = await this.userService.findAll();
         return {users};
+    }
+
+    @Get('create')
+    @Render('user/user-form')
+    createForm(){
+        return {user:{}}
+    }
+
+    @Post()
+    @Redirect('/admin/users')
+    async create(@Body() createUserDto:CreateUserDto){
+        console.log(createUserDto)
+        return {success:true}
     }
 }

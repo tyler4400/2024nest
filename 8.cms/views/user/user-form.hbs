@@ -1,0 +1,23 @@
+<h1>添加用户</h1>
+<form action="/admin/users" method="POST">
+    <div class="mb-3">
+        <label for="username" class="form-label">用户名</label>
+        <input type="text" class="form-control" id="username" name="username" value="">
+    </div>
+        <div class="mb-3">
+        <label for="password" class="form-label">密码</label>
+        <input type="password" class="form-control" id="password" name="password" value="">
+    </div>
+        <div class="mb-3">
+        <label for="email" class="form-label">邮箱</label>
+        <input type="email" class="form-control" id="email" name="email" value="">
+    </div>
+        <div class="mb-3">
+        <label for="username" class="form-label">状态</label>
+        <select class="form-control" id="status" name="status">
+            <option value="1">激活</option>
+            <option value="0">未激活</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">保存</button>
+</form>

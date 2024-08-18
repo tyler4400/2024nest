@@ -2,13 +2,8 @@ import { applyDecorators } from '@nestjs/common';
 import { ApiProperty, ApiPropertyOptional,PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {IsString, IsOptional, IsBoolean, IsNumber, IsEmail, MinLength, MaxLength, Validate,} from 'class-validator';
-import {StartsWith,IsUsernameUnique, StartsWithConstraint} from 'src/shared/validators/user-validator';
 export class CreateUserDto {
-    //规定所有的用户名必须以某个前缀开头 user_
-    //@IsString()
-    //@Validate(StartsWithConstraint)
-    @StartsWith('user_')
-    @IsUsernameUnique()
+    @IsString()
     @ApiProperty({description:'用户名',example:'nick'})
     username: string;
 

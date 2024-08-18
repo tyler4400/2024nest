@@ -5,7 +5,6 @@ import { User } from 'src/shared/entities/user.entity';
 import { UserService } from 'src/shared/services/user.service';
 import { Result } from 'src/shared/vo/result';
 import {Logger} from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 @Controller('api/users')
 @SerializeOptions({
     strategy:'exposeAll'
@@ -14,7 +13,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 @ApiTags('api/users')
 export class UserController {
     private readonly logger = new Logger(UserController.name);//ConsoleLogger
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly winstonLogger:LoggerService
+    
     constructor(
         private readonly userService: UserService,
     ) { }
@@ -24,7 +23,6 @@ export class UserController {
         //[Nest] 13888  - 2024/08/18 10:42:31   ERROR [UserController] 这是Nest内置的日志记录器
         //[Nest] 进程号  - 时间戳               日志级别 Context Message
         this.logger.error('ConsoleLogger 日志');
-        this.winstonLogger.error('winstonLogger 日志');
         return this.userService.findAll();
     }
     @Get(":id")
