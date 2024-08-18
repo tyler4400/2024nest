@@ -1,11 +1,31 @@
-import { applyDecorators, Body, ClassSerializerInterceptor, Controller, Delete, Get, HttpException, HttpStatus, Inject, LoggerService, Param, ParseIntPipe, Post, Put, SerializeOptions, UseInterceptors } from '@nestjs/common';
+const winston = require('winston');
+require('winston-daily-rotate-file');
+const logger = winston.createLogger({
+    transports:[
+        new winston.transports.DailyRotateFile({
+            //指定日志文件的文件名模式
+            filename:"app-%DATE%.log",
+            //指定文件的目录
+            dirname:"./logs",
+            //指定日期的格式
+            datePattern:'YYYY-MM-DD',
+            //指定日志的级别
+            level:'info',
+            //设置日志的最大的文件大小
+            maxSize:'1k',
+            //设置日志文件的最大保留天数
+            maxFiles:'14d',//14天后会自动删除
+            zippedArchive:true,//指定是否压缩旧的日志文件
+        })
+    ]
+})
+logger.info(`import { applyDecorators, Body, ClassSerializerInterceptor, Controller, Delete, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Put, SerializeOptions, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateUserDto, UpdateUserDto } from 'src/shared/dtos/user.dto';
 import { User } from 'src/shared/entities/user.entity';
 import { UserService } from 'src/shared/services/user.service';
 import { Result } from 'src/shared/vo/result';
 import {Logger} from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 @Controller('api/users')
 @SerializeOptions({
     strategy:'exposeAll'
@@ -14,7 +34,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 @ApiTags('api/users')
 export class UserController {
     private readonly logger = new Logger(UserController.name);//ConsoleLogger
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly winstonLogger:LoggerService
     constructor(
         private readonly userService: UserService,
     ) { }
@@ -23,8 +42,7 @@ export class UserController {
     async findAll() {
         //[Nest] 13888  - 2024/08/18 10:42:31   ERROR [UserController] 这是Nest内置的日志记录器
         //[Nest] 进程号  - 时间戳               日志级别 Context Message
-        this.logger.error('ConsoleLogger 日志');
-        this.winstonLogger.error('winstonLogger 日志');
+        this.logger.error('这是Nest内置的日志记录器');
         return this.userService.findAll();
     }
     @Get(":id")
@@ -101,4 +119,4 @@ function ApiDelete() {
         ApiResponse({ status: 200, description: '用户删除成功', type: Result }),
         ApiResponse({ status: 404, description: '用户未找到' })
     );
-}
+}`);//错误级别

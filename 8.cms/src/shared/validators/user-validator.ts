@@ -26,18 +26,20 @@ export function StartsWith(prefix: string, validationOptions?: ValidationOptions
         });
     }
 }
+let userRepository=null;
 @Injectable()//装饰器，用于定义自定义验证器。可以指定验证器名称和是否为异步。
 @ValidatorConstraint({ name: 'IsUsernameUnique', async: true })
 export  class IsUsernameUniqueConstraint implements ValidatorConstraintInterface {
     constructor(
         @InjectRepository(User) protected repository:Repository<User>
       ){
-       console.log('repository',this.repository)
+       if(!userRepository){
+        userRepository = this.repository
+       }
       }
-    async validate(value: any, validationArguments?: ValidationArguments) {
-        //const result = await this.repository.findOneBy({username:value});
-        //return !result;
-        return true;
+      validate =async (value: any, validationArguments?: ValidationArguments) =>{
+        const result = await userRepository.findOneBy({username:value});
+        return !result;
     }
     defaultMessage?(validationArguments?: ValidationArguments): string {
         const { property,value } = validationArguments;
