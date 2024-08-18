@@ -34,3 +34,6 @@ npm install cookie-parser express-session @nestjs/platform-express
 ## 解决这个问题有两种办法 
 1. 封装专门的VO
 2. 可以使用class-transformer自动转换
+
+
+nest g cms-resource role --collection=./node_modules/cms-resource
