@@ -1,0 +1,15 @@
+<h1>用户详情</h1>
+<div class="mb-3">
+    <label class="form-label">用户名:</label>
+    <p class="form-control-plaintext">{{user.username}}</p>
+</div>
+<div class="mb-3">
+    <label class="form-label">邮箱:</label>
+    <p class="form-control-plaintext">{{user.email}}</p>
+</div>
+<div class="mb-3">
+    <label class="form-label">状态:</label>
+    <p class="form-control-plaintext">{{#if user.status}}激活{{else}}未激活{{/if}}</p>
+</div>
+<a href="/admin/users/{{user.id}}/edit" class="btn btn-warning btn-sm">修改</a>
+<a href="/admin/users" class="btn btn-secondary btn-sm">返回列表</a>

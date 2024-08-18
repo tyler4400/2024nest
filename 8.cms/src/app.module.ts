@@ -1,15 +1,10 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AdminModule } from './admin/admin.module';
 import { ApiModule } from './api/api.module';
 import { SharedModule } from './shared/shared.module';
-import {
-  AcceptLanguageResolver,
-  QueryResolver,
-  HeaderResolver,
-  CookieResolver,
-  I18nModule,
-} from 'nestjs-i18n';
+import {AcceptLanguageResolver,QueryResolver,I18nModule,} from 'nestjs-i18n';
 import * as  path from 'path';
+import methodOverride from 'src/shared/middlewares/method-override'
 @Module({
   imports: [
     I18nModule.forRoot({
@@ -30,4 +25,9 @@ import * as  path from 'path';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(methodOverride).forRoutes('*');
+  }
+  
+}

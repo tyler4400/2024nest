@@ -29,7 +29,6 @@ export class UserController {
     @ApiFindOne()
     async findOne(@Param("id", ParseIntPipe) id: number) {
         const result = await this.userService.findOne({ where: { id } });
-        console.log('findOne',result)
         if (result) {
             return result;
         } else {

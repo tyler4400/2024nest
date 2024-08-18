@@ -1,22 +1,23 @@
-<h1>添加用户</h1>
-<form action="/admin/users" method="POST">
+<h1>{{#if user.id}}编辑用户{{else}}添加用户{{/if}}</h1>
+<form action="/admin/users{{#if user.id}}/{{user.id}}{{/if}}" method="POST">
+    {{#if user.id}}<input type="hidden" name="_method" value="PUT" >{{/if}}
     <div class="mb-3">
         <label for="username" class="form-label">用户名</label>
-        <input type="text" class="form-control" id="username" name="username" value="">
+        <input type="text" class="form-control" id="username" name="username" value="{{user.username}}">
     </div>
-        <div class="mb-3">
+    <div class="mb-3">
         <label for="password" class="form-label">密码</label>
         <input type="password" class="form-control" id="password" name="password" value="">
     </div>
-        <div class="mb-3">
+    <div class="mb-3">
         <label for="email" class="form-label">邮箱</label>
-        <input type="email" class="form-control" id="email" name="email" value="">
+        <input type="email" class="form-control" id="email" name="email" value="{{user.email}}">
     </div>
-        <div class="mb-3">
+    <div class="mb-3">
         <label for="username" class="form-label">状态</label>
         <select class="form-control" id="status" name="status">
-            <option value="1">激活</option>
-            <option value="0">未激活</option>
+            <option value="1" {{#if user.status}}selected{{/if}}>激活</option>
+            <option value="0" {{#unless user.status}}selected{{/unless}}>未激活</option>
         </select>
     </div>
     <button type="submit" class="btn btn-primary">保存</button>

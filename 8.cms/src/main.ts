@@ -10,6 +10,8 @@ import {DocumentBuilder, SwaggerModule} from '@nestjs/swagger';
 import { I18nValidationPipe,I18nValidationExceptionFilter } from 'nestjs-i18n';
 import {MyLogger} from './my-logger';
 import {ExtendedConsoleLogger} from './extended-console-logger';
+import { useContainer } from 'class-validator';
+import * as helpers from 'src/shared/helpers'
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule,{
     //logger:false //禁用日志
@@ -19,6 +21,7 @@ async function bootstrap() {
     //logger:new ExtendedConsoleLogger()
     //bufferLogs:true,
   });//set  NO_COLOR=true
+  useContainer(app.select(AppModule),{fallbackOnErrors:true});
   //console.log(app.get('LOGGER_CONFIG'))
   //app.useLogger(app.get(MyLogger));
   //配置静态文件根目录
@@ -28,6 +31,7 @@ async function bootstrap() {
   //配置handlebars模板引擎
   app.engine('hbs',engine({
     extname:'.hbs',
+    helpers,
     runtimeOptions:{
       allowProtoMethodsByDefault:true,//允许访问原型上的方法
       allowProtoPropertiesByDefault:true//允许访问原型上的属性

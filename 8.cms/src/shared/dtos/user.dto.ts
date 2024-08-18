@@ -1,11 +1,17 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiProperty, ApiPropertyOptional,PartialType } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional,PartialType as PartialTypeFromSwagger } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {IsString, IsOptional, IsBoolean, IsNumber, IsEmail, MinLength, MaxLength, Validate, IsNotEmpty,} from 'class-validator';
+import {IsString, IsOptional, IsBoolean, IsEmail, MinLength, MaxLength, Validate, IsNotEmpty} from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
+import { IsUsernameUniqueConstraint } from '../validators/user-validator';
+import {PartialType,OmitType} from '@nestjs/mapped-types'
+import {IdValidators,StatusValidators,SortValidators} from '../decorators/dto.decorator';
 export class CreateUserDto {
     @IsString()
     @ApiProperty({description:'用户名',example:'nick'})
+    @Validate(IsUsernameUniqueConstraint, [], {
+        message: i18nValidationMessage('validation.usernameIsNotUnique')
+    })
     username: string;
 
     @PasswordValidators()
@@ -33,14 +39,19 @@ export class CreateUserDto {
     @ApiProperty({description:'排序号',example:100})
     sort: number;
 }
-export class UpdateUserDto extends PartialType(CreateUserDto) {
-    @ApiProperty({description:'用户ID',example:1})
-    @IsOptional()
-    @IsNumber()
+export class UpdateUserDto extends PartialTypeFromSwagger(OmitType(PartialType(CreateUserDto),['username','password'])) {
+    @IdValidators()
     id: number;
+
+    @IsString()
+    @IsOptional()
+    @ApiProperty({description:'用户名',example:'nick'})
+    username: string;
+
+    @ApiProperty({description:'密码',example:'666666'})
+    @IsOptional()
+    password: string;
 }
-let v:any={};
-console.log('validation',i18nValidationMessage('validation.minLength',{field:'password',length:6})(v))
 function PasswordValidators() {
     return applyDecorators(
         IsString(),//validation.minLength|{"field":"password","length":6}
@@ -57,13 +68,9 @@ function EmailValidators() {
 function MobileValidators() {
     return applyDecorators(IsString(), IsOptional())
 }
-function StatusValidators() {
-    return applyDecorators(IsNumber(), IsOptional(), Type(() => Number))
-}
+
 function IsSuperValidators() {
     return applyDecorators(IsBoolean(), IsOptional(), Type(() => Boolean))
 }
-function SortValidators() {
-    return applyDecorators(IsNumber(), IsOptional(), Type(() => Number))
-}
-//这是一个同步的自定义校验类
+
+

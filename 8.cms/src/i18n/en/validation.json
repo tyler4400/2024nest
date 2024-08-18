@@ -1,5 +1,6 @@
 {
     "minLength":"The {field} must be at least {length} characters.",
     "maxLength":"The {field} must not exceed {length} characters.",
-    "isNotEmpty":"The {field} field is required"
+    "isNotEmpty":"The {field} field is required",
+    "usernameIsNotUnique":"this username is taken!"
 }

@@ -1,6 +1,6 @@
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose, Transform } from 'class-transformer';
-import {Entity,Column,PrimaryGeneratedColumn} from 'typeorm';
+import {Entity,Column,PrimaryGeneratedColumn,CreateDateColumn,UpdateDateColumn} from 'typeorm';
 //实体会映射为数据库里的一张表
 @Entity()
 export class User{
@@ -45,11 +45,11 @@ export class User{
     @ApiProperty({description:'排序号',example:100})
     sort:number //排序编号
 
-    @Column({type:'timestamp',default:()=>'CURRENT_TIMESTAMP'})
+    @CreateDateColumn()
     @ApiProperty({description:'创建时间',example:'2024年8月11日16:49:22'})
     createdAt:Date
 
-    @Column({type:'timestamp',default:()=>'CURRENT_TIMESTAMP',onUpdate:'CURRENT_TIMESTAMP'})
+    @UpdateDateColumn()
     @ApiProperty({description:'更新时间',example:'2024年8月11日16:49:22'})
     updatedAt:Date
 }

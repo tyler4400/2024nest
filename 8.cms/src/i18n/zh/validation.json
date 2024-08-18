@@ -1,5 +1,6 @@
 {
     "minLength":"{field}至少需要{length}个字符.",
     "maxLength":"{field}不能超过{length}个字符.",
-    "isNotEmpty":"{field}不能为空"
+    "isNotEmpty":"{field}不能为空",
+    "usernameIsNotUnique":"此用户名在数据库中已经存在"
 }
