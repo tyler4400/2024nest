@@ -5,14 +5,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import {User} from './entities/user.entity';
 import { UserService } from './services/user.service';
 import {IsUsernameUniqueConstraint} from './validators/user-validator'
+import {UtilityService} from './services/utility.service'
 @Global()
 @Module({
     providers:[
         IsUsernameUniqueConstraint,
         ConfigurationService,
-        UserService
+        UtilityService,
+        UserService,
     ],
-    exports:[IsUsernameUniqueConstraint,ConfigurationService,UserService],
+    exports:[IsUsernameUniqueConstraint,ConfigurationService,UtilityService,UserService],
     imports:[
         ConfigModule.forRoot({isGlobal:true}),
         TypeOrmModule.forRootAsync({

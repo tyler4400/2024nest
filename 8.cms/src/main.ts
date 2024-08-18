@@ -5,8 +5,9 @@ import * as session from 'express-session';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import {join} from 'path';
 import {engine} from 'express-handlebars';
-import { ValidationPipe } from '@nestjs/common';
+//import { ValidationPipe } from '@nestjs/common';
 import {DocumentBuilder, SwaggerModule} from '@nestjs/swagger';
+import { I18nValidationPipe,I18nValidationExceptionFilter } from 'nestjs-i18n';
 import {MyLogger} from './my-logger';
 import {ExtendedConsoleLogger} from './extended-console-logger';
 async function bootstrap() {
@@ -43,7 +44,9 @@ async function bootstrap() {
       maxAge: 1000 * 60 * 60 * 24 * 7
     }
   }));
-  app.useGlobalPipes(new ValidationPipe({transform:true}));
+  //app.useGlobalPipes(new ValidationPipe({transform:true}));
+  app.useGlobalPipes(new I18nValidationPipe({transform:true}));
+  app.useGlobalFilters(new I18nValidationExceptionFilter({detailedErrors:true}));
   //创建一个新的DocumentBuild实例，用于配置swagger文档
   const config = new DocumentBuilder()
   .setTitle('CMS API')

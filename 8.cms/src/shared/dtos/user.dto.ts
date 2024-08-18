@@ -1,7 +1,8 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiProperty, ApiPropertyOptional,PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {IsString, IsOptional, IsBoolean, IsNumber, IsEmail, MinLength, MaxLength, Validate,} from 'class-validator';
+import {IsString, IsOptional, IsBoolean, IsNumber, IsEmail, MinLength, MaxLength, Validate, IsNotEmpty,} from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 export class CreateUserDto {
     @IsString()
     @ApiProperty({description:'用户名',example:'nick'})
@@ -38,12 +39,20 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
     @IsNumber()
     id: number;
 }
-
+let v:any={};
+console.log('validation',i18nValidationMessage('validation.minLength',{field:'password',length:6})(v))
 function PasswordValidators() {
-    return applyDecorators(IsString(), MinLength(6), MaxLength(8))
+    return applyDecorators(
+        IsString(),//validation.minLength|{"field":"password","length":6}
+        IsNotEmpty({message:i18nValidationMessage('validation.isNotEmpty',{field:'password'})}),
+        MinLength(6,{message:i18nValidationMessage('validation.minLength',{field:'password',length:6})}),
+        MaxLength(8,{message:i18nValidationMessage('validation.maxLength',{field:'password',length:8})}))
 }
 function EmailValidators() {
-    return applyDecorators(IsEmail(), IsOptional())
+    return applyDecorators(
+        IsEmail(), 
+        IsNotEmpty({message:i18nValidationMessage('validation.isNotEmpty',{field:'email'})})
+    )
 }
 function MobileValidators() {
     return applyDecorators(IsString(), IsOptional())
