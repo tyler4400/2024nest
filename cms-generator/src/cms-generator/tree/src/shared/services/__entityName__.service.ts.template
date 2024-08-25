@@ -1,0 +1,42 @@
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { <%= classify(entityName) %> } from "../entities/<%= dasherize(entityName) %>.entity";
+import { Repository, Like } from 'typeorm';
+import { MySQLBaseService } from "./mysql-base.service";
+ import { Create<%= classify(entityName) %>Dto, Update<%= classify(entityName) %>Dto } from '../dto/<%= dasherize(entityName) %>.dto';
+import { TreeRepository, UpdateResult } from 'typeorm';
+@Injectable()
+export class <%= classify(entityName) %>Service extends MySQLBaseService<<%= classify(entityName) %>> {
+  constructor(
+    @InjectRepository(<%= classify(entityName) %>) protected repository: TreeRepository<<%= classify(entityName) %>>
+  ) {
+    super(repository);
+  }
+
+  async findAll() {
+    const <%= camelize(entityName) %>Tree = await this.repository.findTrees({ relations: ['children', 'parent'] });
+    return <%= camelize(entityName) %>Tree.filter(<%= camelize(entityName) %> => !<%= camelize(entityName) %>.parent);
+  }
+  
+  async create(create<%= classify(entityName) %>Dto: Create<%= classify(entityName) %>Dto): Promise<<%= classify(entityName) %>> {
+    const { parentId, ...dto } = create<%= classify(entityName) %>Dto;
+    const <%= camelize(entityName) %> = this.repository.create(dto);
+    if (parentId) {
+      <%= camelize(entityName) %>.parent = await this.repository.findOneBy({ id: parentId });
+    }
+    await this.repository.save(<%= camelize(entityName) %>);
+    return this.findOne({ where: { id: <%= camelize(entityName) %>.id } });
+  }
+
+  async update(id: number, update<%= classify(entityName) %>Dto: Update<%= classify(entityName) %>Dto) {
+    const { parentId, ...dto } = update<%= classify(entityName) %>Dto;
+    const <%= camelize(entityName) %> = await this.repository.findOneBy({ id });
+    if (!<%= camelize(entityName) %>) throw new Error('<%= classify(entityName) %> not found');
+    Object.assign(<%= camelize(entityName) %>, dto);
+    if (parentId) {
+      <%= camelize(entityName) %>.parent = await this.repository.findOneBy({ id: parentId });
+    }
+    await this.repository.save(<%= camelize(entityName) %>);
+    return UpdateResult.from({ raw: [], affected: 1, records: [] });
+  }
+}

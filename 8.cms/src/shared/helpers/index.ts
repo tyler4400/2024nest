@@ -4,3 +4,4 @@ export * from './inc';
 export * from './dec';
 export * from './multiply';
 export * from './json';
+export * from './def';

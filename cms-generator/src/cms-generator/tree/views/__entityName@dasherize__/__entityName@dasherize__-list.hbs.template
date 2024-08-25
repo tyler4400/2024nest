@@ -1,0 +1,109 @@
+<h1>
+  <%= title %>列表
+</h1>
+<a href="/admin/<%= dasherize(plural(entityName)) %>/create" class="btn btn-success mb-3">添加<%=title %></a>
+<form method="GET" action="/admin/<%= dasherize(plural(entityName)) %>" class="mb-3">
+  <div class="input-group">
+    <input type="text" name="keyword" class="form-control" placeholder="请输入搜索关键字" value="{{keyword}}">
+    <button class="btn btn-outline-secondary">搜索</button>
+  </div>
+</form>
+<table class="table">
+  <thead>
+    <tr>
+      <td>名称</td>
+      <td>状态</td>
+      <td>排序</td>
+      <td>操作</td>
+    </tr>
+  </thead>
+  <tbody id="<%= camelize(entityName) %>TreeTable">
+    {{#each <%= camelize(entityName) %>Tree}}
+    {{> <%= dasherize(entityName) %>-node this depth=0}}
+    {{/each}}
+  </tbody>
+</table>
+<script>
+  function delete<%= classify(entityName) %> (id) {
+    if (confirm('确定要删除吗?')) {
+      $.ajax({
+        url: `/admin/<%= dasherize(plural(entityName)) %>/${id}`,
+        type: 'DELETE',
+        success: function (data) {
+          if (data.success) {
+            const params = new URLSearchParams(window.location.search);
+            params.delete('page');
+            params.append('page', 1)
+            const query = params.toString();
+            window.location = window.location.pathname + '?' + query;
+          }
+        }
+      })
+    }
+  }
+  $(function () {
+    $('#<%= camelize(entityName) %>TreeTable').on('click', '.toggle', function () {
+      const $toggle = $(this);
+      const id = $toggle.data('id');
+      const $tr = $toggle.closest('tr');
+      if ($tr.nextAll('tr[data-parent="' + id + '"]').is(':visible')) {
+        hideChildren($tr, id);
+        $toggle.html('<i class="bi bi-folder-plus"></i>');
+      } else {
+        $tr.nextAll('tr[data-parent="' + id + '"]').show();
+        $toggle.html('<i class="bi bi-folder-minus"></i>');
+      }
+    });
+    function hideChildren($tr, id) {
+      const $children = $tr.nextAll('tr[data-parent="' + id + '"]');
+      $children.each(function () {
+        const childId = $(this).data('id');
+        hideChildren($(this), childId);
+      });
+      $children.hide();
+    }
+    $('.sort-text').on('dblclick', function () {
+      const $this = $(this);
+      const id = $this.data('id');
+      $this.addClass('d-none');
+      $(`.sort-input[data-id="${id}"]`).removeClass('d-none').focus();
+    });
+    $('.sort-input').on('blur', function () {
+      const $this = $(this);
+      const id = $this.data('id');
+      const newSort = $this.val();
+      $this.addClass('d-none');
+      $.ajax({
+        url: `/admin/<%= dasherize(plural(entityName)) %>/${id}`,
+        type: 'PUT',
+        headers: { 'accept': 'application/json' },
+        contentType: 'application/json',
+        data: JSON.stringify({ sort: newSort }),
+        success: function (data) {
+          if (data.success) {
+            $(`.sort-text[data-id="${id}"]`).removeClass('d-none').text(newSort);
+          }
+        }
+      })
+    });
+    $('.status-toggle').on('click', function () {
+      const $this = $(this);
+      const id = $this.data('id');
+      const currentStatus = $this.data('status');
+      const newStatus = currentStatus == 1 ? 0 : 1;
+      $.ajax({
+        url: `/admin/<%= dasherize(plural(entityName)) %>/${id}`,
+        type: 'PUT',
+        headers: { 'accept': 'application/json' },
+        contentType: 'application/json',
+        data: JSON.stringify({ status: newStatus }),
+        success: function (data) {
+          if (data.success) {
+            $this.data('status', newStatus);
+            $this.html(` <i class="bi ${newStatus ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} ${newStatus ? 'text-success' : 'text-danger'}"></i>`);
+          }
+        }
+      })
+    });
+  });
+</script>

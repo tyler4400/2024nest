@@ -1,9 +1,13 @@
 {
   "$schema": "../node_modules/@angular-devkit/schematics/collection-schema.json",
   "schematics": {
-    "generateFiles": {
-      "description": "A blank schematic.",
-      "factory": "./cms-generator/index#generateFiles"
+    "generateList": {
+      "description": "generateList.",
+      "factory": "./cms-generator/index#generateList"
+    },
+    "generateTree": {
+      "description": "generateTree.",
+      "factory": "./cms-generator/index#generateTree"
     }
   }
 }

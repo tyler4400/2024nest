@@ -36,4 +36,6 @@ npm install cookie-parser express-session @nestjs/platform-express
 2. 可以使用class-transformer自动转换
 
 
-nest g generateFiles access 资源 --collection=D:/aproject/2024nest/cms-generator
+nest g generateList tag 标签 --collection=D:/aproject/2024nest/cms-generator
+nest g generateList article 文章 --collection=D:/aproject/2024nest/cms-generator
+nest g generateTree category 分类 --collection=D:/aproject/2024nest/cms-generator

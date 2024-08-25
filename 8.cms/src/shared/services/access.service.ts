@@ -1,7 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Access } from "../entities/access.entity";
-import { TreeRepository, Like } from 'typeorm';
+import { TreeRepository, Like,UpdateResult } from 'typeorm';
 import { MySQLBaseService } from "./mysql-base.service";
 import { CreateAccessDto,UpdateAccessDto } from "../dto/access.dto";
 @Injectable()
@@ -37,6 +37,14 @@ export class AccessService extends MySQLBaseService<Access> {
     return await this.repository.save(access);
   }
   async update(id: number, updateDto: UpdateAccessDto) {
-    return this.repository.update(id, updateDto);
+    const {parentId,...dto} = updateDto;
+    const access = await this.repository.findOneBy({id})
+    if(!access) throw new NotFoundException('Access not found');
+    Object.assign(access,dto);
+    if(parentId){
+      access.parent = await this.repository.findOneBy({id:parentId})
+    }
+    await this.repository.save(access);
+    return UpdateResult.from({raw:[],affected:1,records:[]});
   }
 }

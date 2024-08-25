@@ -36,15 +36,18 @@
 </form>
 <script>
     const accessTree = {{{ json accessTree }}};
+    const selectedParentId = {{{def access.parent.id}}}
+    const accessId =  {{{def access.id}}}
     function renderTree(accesses) {
         let html = `<ul class="list-unstyled">`;
         accesses.forEach(function (access) {
+            if(access.id === accessId)return;
             html += `
           <li class="mb-2">
             <div class="d-flex align-items-center">
                ${access.children?.length > 0 ? '<span class="toggle me-2 cursor-pointer"><i class="bi bi-folder-minus"></i></span>' : '<span class="me-4"></span>'}
                 <label class="form-check-label">
-                  <input type="radio" class="form-check-input" name="parentId" value="${access.id}"/>
+                  <input type="radio" class="form-check-input" ${access.id === selectedParentId?'checked':''} name="parentId" value="${access.id}"/>
                   ${access.name}
                 </label>
             </div>

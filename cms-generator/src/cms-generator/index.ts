@@ -7,7 +7,13 @@ import { strings } from '@angular-devkit/core';
 import { plural } from 'pluralize'
 import * as path from 'path'
 import * as ts from 'typescript';
-export function generateFiles(options: any): Rule {
+export function generateList(options: any): Rule {
+  return generateFiles(options,'list');
+}
+export function generateTree(options: any): Rule {
+  return generateFiles(options,'tree');
+}
+export function generateFiles(options: any,templatePath:string): Rule {
   return (_tree: Tree, _context: SchematicContext) => {
     //从选项中获取name属性并赋值给entityName
     const entityName = options.name;//获取name参数
@@ -15,7 +21,7 @@ export function generateFiles(options: any): Rule {
     //定义要应用的模板规则
     const sourceTemplateRules = apply(
       //指定模板文件所在的目录
-      url('./files/src'),
+      url(`./${templatePath}/src`),
       [
         //应用模板，将传入的选项传递给模板
         applyTemplates({
@@ -31,7 +37,7 @@ export function generateFiles(options: any): Rule {
     //定义要应用的模板规则
     const viewsTemplateRules = apply(
       //指定模板文件所在的目录
-      url('./files/views'),
+      url(`./${templatePath}/views`),
       [
         //应用模板，将传入的选项传递给模板
         applyTemplates({
