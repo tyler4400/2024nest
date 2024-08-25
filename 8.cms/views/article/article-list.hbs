@@ -1,0 +1,136 @@
+<h1>
+  文章列表
+</h1>
+<a href="/admin/articles/create" class="btn btn-success mb-3">添加文章</a>
+<form method="GET" action="/admin/articles" class="mb-3">
+  <div class="input-group">
+    <input type="text" name="keyword" class="form-control" placeholder="请输入搜索关键字" value="{{keyword}}">
+    <button class="btn btn-outline-secondary">搜索</button>
+  </div>
+</form>
+<table class="table">
+  <thead>
+    <tr>
+      <td>名称</td>
+      <td>状态</td>
+      <td>排序</td>
+      <td>操作</td>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each articles}}
+      <tr>
+        <td>{{this.name}}</td>
+        <td>
+          <span class="status-toggle" data-id="{{this.id}}" data-status="{{this.status}}">
+            {{#if this.status}}
+            <i class="bi bi-check-circle-fill text-success"></i>
+            {{else}}
+            <i class="bi bi-x-circle-fill text-danger"></i>
+            {{/if}}
+          </span>
+        </td>
+        <td>
+          <span class="sort-text" data-id="{{this.id}}">{{this.sort}}</span>
+          <input type="number" class="form-control sort-input d-none" style="width:50%" data-id="{{this.id}}"
+            value="{{this.sort}}">
+        </td>
+        <td>
+          <a href="/admin/articles/{{this.id}}" class="btn btn-primary btn-sm">查看</a>
+          <a href="/admin/articles/{{this.id}}/edit" class="btn btn-warning btn-sm">修改</a>
+          <a class="btn btn-danger btn-sm" onclick="deleteArticle({{this.id}})">删除</a>
+        </td>
+      </tr>
+      {{/each}}
+  </tbody>
+</table>
+<nav>
+  <ul class="pagination">
+    <li class="page-item {{#if (eq page 1)}}disabled{{/if}}">
+      <a class="page-link" href="?page={{dec page}}&keyword={{keyword}}&limit={{limit}}">上一页</a>
+    </li>
+    {{#each (range 1 pageCount)}}
+    <li class="page-item {{#if (eq this ../page)}}active{{/if}}">
+      <a class="page-link" href="?page={{this}}&keyword={{../keyword}}&limit={{../limit}}">{{this}}</a>
+    </li>
+    {{/each}}
+
+    <li class="page-item {{#if (eq page pageCount)}}disabled{{/if}}">
+      <a class="page-link" href="?page={{inc page}}&keyword={{keyword}}&limit={{limit}}">下一页</a>
+    </li>
+    <li class="page-item">
+      <form method="GET" action="/admin/articles" class="d-inline-block ms-3">
+        <input type="hidden" name="keyword" value="{{keyword}}">
+        <input type="hidden" name="page" value="{{page}}">
+        <div class="input-group">
+          <input type="number" name="limit" class="form-control" placeholder="每页条数" value="{{limit}}" min="1">
+          <button class="btn btn-outline-secondary" type="submit">设置每页的条数</button>
+        </div>
+      </form>
+    </li>
+  </ul>
+</nav>
+<script>
+  function deleteArticle (id) {
+    if (confirm('确定要删除吗?')) {
+      $.ajax({
+        url: `/admin/articles/${id}`,
+        type: 'DELETE',
+        success: function (data) {
+          if (data.success) {
+            const params = new URLSearchParams(window.location.search);
+            params.delete('page');
+            params.append('page', 1)
+            const query = params.toString();
+            window.location = window.location.pathname + '?' + query;
+          }
+        }
+      })
+    }
+  }
+  $(function () {
+    $('.sort-text').on('dblclick', function () {
+      const $this = $(this);
+      const id = $this.data('id');
+      $this.addClass('d-none');
+      $(`.sort-input[data-id="${id}"]`).removeClass('d-none').focus();
+    });
+    $('.sort-input').on('blur', function () {
+      const $this = $(this);
+      const id = $this.data('id');
+      const newSort = $this.val();
+      $this.addClass('d-none');
+      $.ajax({
+        url: `/admin/articles/${id}`,
+        type: 'PUT',
+        headers: { 'accept': 'application/json' },
+        contentType: 'application/json',
+        data: JSON.stringify({ sort: newSort }),
+        success: function (data) {
+          if (data.success) {
+            $(`.sort-text[data-id="${id}"]`).removeClass('d-none').text(newSort);
+          }
+        }
+      })
+    });
+    $('.status-toggle').on('click', function () {
+      const $this = $(this);
+      const id = $this.data('id');
+      const currentStatus = $this.data('status');
+      const newStatus = currentStatus == 1 ? 0 : 1;
+      $.ajax({
+        url: `/admin/articles/${id}`,
+        type: 'PUT',
+        headers: { 'accept': 'application/json' },
+        contentType: 'application/json',
+        data: JSON.stringify({ status: newStatus }),
+        success: function (data) {
+          if (data.success) {
+            $this.data('status', newStatus);
+            $this.html(` <i class="bi ${newStatus ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} ${newStatus ? 'text-success' : 'text-danger'}"></i>`);
+          }
+        }
+      })
+    });
+  });
+</script>

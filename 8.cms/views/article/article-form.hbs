@@ -1,0 +1,18 @@
+<h1>{{#if article.id}}编辑文章{{else}}添加文章{{/if}}</h1>
+<form
+    action="/admin/articles{{#if article.id}}/{{article.id}}{{/if}}"
+    method="POST">
+    {{#if article.id}}<input type="hidden" name="_method" value="PUT">{{/if}}
+        <div class="mb-3">
+            <label for="name" class="form-label">名称</label>
+            <input type="text" class="form-control" id="name" name="name" value="{{article.name}}">
+        </div>
+        <div class="mb-3">
+            <label for="status" class="form-label">状态</label>
+            <select class="form-control" id="status" name="status">
+                <option value="1" {{#if article.status}}selected{{/if}}>激活</option>
+                <option value="0" {{#unless article.status}}selected{{/unless}}>未激活</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">保存</button>
+</form>

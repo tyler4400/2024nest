@@ -1,0 +1,14 @@
+<h1>
+    标签详情
+</h1>
+<div class="mb-3">
+    <label class="form-label">名称:</label>
+    <p class="form-control-plaintext">{{tag.name}}</p>
+</div>
+<div class="mb-3">
+    <label class="form-label">状态:</label>
+    <p class="form-control-plaintext">{{#if tag.status}}激活{{else}}未激活{{/if}}</p>
+</div>
+<a href="/admin/tags/{{tag.id}}/edit"
+    class="btn btn-warning btn-sm">修改</a>
+<a href="/admin/tags" class="btn btn-secondary btn-sm">返回列表</a>

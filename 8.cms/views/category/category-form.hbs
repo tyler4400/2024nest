@@ -1,0 +1,61 @@
+<h1>{{#if category.id}}编辑分类{{else}}添加分类{{/if}}</h1>
+<form
+    action="/admin/categories{{#if category.id}}/{{category.id}}{{/if}}"
+    method="POST">
+    {{#if category.id}}<input type="hidden" name="_method" value="PUT">{{/if}}
+        <div class="mb-3">
+            <label for="name" class="form-label">名称</label>
+            <input type="text" class="form-control" id="name" name="name" value="{{category.name}}">
+        </div>
+        <div class="mb-3">
+            <label for="parentId" class="form-label">父权限</label>
+            <div id="parentTree" class="border rounded p-3"></div>
+        </div>
+        <div class="mb-3">
+            <label for="status" class="form-label">状态</label>
+            <select class="form-control" id="status" name="status">
+                <option value="1" {{#if category.status}}selected{{/if}}>激活</option>
+                <option value="0" {{#unless category.status}}selected{{/unless}}>未激活</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">保存</button>
+</form>
+<script>
+    const categoryTree = {{{ json categoryTree }}};
+    const selectedParentId = {{{ def category.parent.id }}};
+    const categoryId = {{{ def category.id }}};
+    function renderTree(categories) {
+        let html = '<ul class="list-unstyled">';
+        categories.forEach(function (category) {
+            if (category.id == categoryId) {
+                return;
+            }
+            html += `
+            <li class="mb-2">
+                <div class="d-flex align-items-center">
+                    ${category.children?.length > 0 ? '<span class="toggle me-2 cursor-pointer"><i class="bi bi-folder-plus"></i></span>' : '<span class="me-4"></span>'}
+                    <label class="form-check-label">
+                        <input type="radio" class="form-check-input" name="parentId" value="${category.id}" ${category.id == selectedParentId ? 'checked' : ''}>
+                        ${category.name}
+                    </label>
+                </div>
+                ${category.children?.length > 0 ? `<div class="children ms-4" >${renderTree(category.children)}</div>` : ''}
+            </li>`;
+        });
+        html += '</ul>';
+        return html;
+    }
+    $(function () {
+        $('#parentTree').html(renderTree(categoryTree));
+        $('body').on('click', '.toggle', function () {
+            const childrenContainer = $(this).parent().siblings('.children');
+            if (childrenContainer.is(':visible')) {
+                childrenContainer.hide();
+                $(this).html('<i class="bi bi-folder-plus"></i>');
+            } else {
+                childrenContainer.show();
+                $(this).html('<i class="bi bi-folder-minus"></i>');
+            }
+        });
+    });
+</script>
