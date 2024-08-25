@@ -1,0 +1,32 @@
+import { ApiProperty, PartialType as PartialTypeFromSwagger } from '@nestjs/swagger';
+import { IsString, IsOptional } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
+import { IdValidators, StatusValidators, SortValidators } from '../decorators/dto.decorator';
+
+export class Create<%= classify(entityName) %>Dto {
+    @IsString()
+    @ApiProperty({ description: '名称', example: 'name' })
+    name: string;
+
+    @StatusValidators()
+    @ApiProperty({ description: '状态', example: 1 })
+    status: number;
+
+    @SortValidators()
+    @ApiProperty({ description: '排序号', example: 100 })
+    sort: number;
+}
+
+export class Update<%= classify(entityName) %>Dto extends PartialTypeFromSwagger(PartialType(Create<%= classify(entityName) %>Dto)) {
+    @IdValidators()
+    id: number;
+
+    @IsString()
+    @IsOptional()
+    @ApiProperty({ description: '用户名', example: 'nick' })
+    username: string;
+
+    @ApiProperty({ description: '密码', example: '666666' })
+    @IsOptional()
+    password: string;
+}

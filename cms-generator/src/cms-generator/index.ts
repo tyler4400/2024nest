@@ -12,7 +12,7 @@ export function generateFiles(options: any): Rule {
     //定义要应用的模板规则
     const sourceTemplateRules = apply(
       //指定模板文件所在的目录
-      url('./files'),
+      url('./files/src'),
       [
         //应用模板，将传入的选项传递给模板
         applyTemplates({
@@ -21,7 +21,7 @@ export function generateFiles(options: any): Rule {
           ...strings,//向模板里传入一些方法
         }),
         //移动生成的文件到目标目录中
-        move(path.normalize('target'))
+        move(path.normalize('src'))
       ]
     )
     //返回一个chain,将模板规则 与文件系统合并

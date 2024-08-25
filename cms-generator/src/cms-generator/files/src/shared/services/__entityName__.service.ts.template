@@ -1,0 +1,33 @@
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { <%= classify(entityName) %> } from "../entities/<%= dasherize(entityName) %>.entity";
+import { Repository, Like } from 'typeorm';
+import { MySQLBaseService } from "./mysql-base.service";
+
+@Injectable()
+export class <%= classify(entityName) %>Service extends MySQLBaseService<<%= classify(entityName) %>> {
+  constructor(
+    @InjectRepository(<%= classify(entityName) %>) protected repository: Repository<<%= classify(entityName) %>>
+  ) {
+    super(repository);
+  }
+
+  async findAll(keyword?: string) {
+    const where = keyword ? [
+      { name: Like(`%${keyword}%`) }
+    ] : {};
+    return this.repository.find({ where });
+  }
+
+  async findAllWithPagination(page: number, limit: number, keyword?: string) {
+    const where = keyword ? [
+      { name: Like(`%${keyword}%`) }
+    ] : {};
+    const [<%= camelize(plural(entityName)) %>, total] = await this.repository.findAndCount({
+      where,
+      skip: (page - 1) * limit,
+      take: limit
+    });
+    return { <%= camelize(plural(entityName)) %>, total };
+  }
+}

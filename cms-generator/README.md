@@ -43,5 +43,10 @@ tsc
 schematics .:generateFiles --name=roleManage --path=角色 --no-dry-run
 
 RoleManger
+
+```
+
+```js
+
 ```
 
