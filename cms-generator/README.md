@@ -40,6 +40,8 @@ tsc
 
 ## 如何运行
 ```js
-schematics .:generateFiles --name=role --path=角色 --dry-run=true
+schematics .:generateFiles --name=roleManage --path=角色 --no-dry-run
+
+RoleManger
 ```
 

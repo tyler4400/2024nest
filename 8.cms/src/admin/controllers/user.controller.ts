@@ -1,5 +1,5 @@
 import { Controller, Get, Render, Post, Redirect, Body, UseFilters, HttpException, Param, ParseIntPipe, Put, Delete, Headers, Res, Query } from '@nestjs/common';
-import { CreateUserDto, UpdateUserDto } from 'src/shared/dtos/user.dto';
+import { CreateUserDto, UpdateUserDto } from 'src/shared/dto/user.dto';
 import { UserService } from 'src/shared/services/user.service';
 import { AdminExceptionFilter } from '../filters/admin-exception-filter';
 import { UtilityService } from 'src/shared/services/utility.service';
