@@ -48,9 +48,60 @@ export function generateFiles(options: any): Rule {
     return chain([
       mergeWith(sourceTemplateRules),
       mergeWith(viewsTemplateRules),
-      updateAdminModule(entityName)
+      updateAdminModule(entityName),
+      updateSharedModule(entityName)
     ])
   };
+}
+function updateSharedModule(entityName: string) {
+  //返回一个函数，接收Tree作为参数
+  return (tree: Tree) => {//此处返回的是一个schematics的规则函数
+    //定义要修改的文件路径 
+    const adminModulePath = 'src/shared/shared.module.ts';
+    //读取并解析文件的内容为TS源文件
+    const sourceFile = getSourceFile(tree, adminModulePath);
+    //如果成功找到要修改的源文件 
+    if (sourceFile) {
+      //获取实体的类的名称(用于代码)和破折号形式(用于文件名) Role  role
+      const { classifiedName, dasherizedName } = getClassifiedAndDasherizedName(entityName);
+      //定义更新操作
+      const updates = [
+        addImportToModule(classifiedName, `./entities/${dasherizedName}.entity`),
+        addImportToModule(`${classifiedName}Service`, `./services/${dasherizedName}.service`),
+        addToModuleArray(`providers`, `${classifiedName}Service`),
+        addToModuleArray(`exports`, `${classifiedName}Service`),
+        addToMethodArray('forFeature', classifiedName)
+      ]
+      //应用更新保存变更到AdminModule文件
+      applyTransformationAndSave(tree, adminModulePath, sourceFile, updates);
+    }
+    return tree;
+  }
+}
+function addToMethodArray(methodName:string,resourceName:string):ts.TransformerFactory<ts.SourceFile>{
+  return (context: ts.TransformationContext) => (rootNode: ts.SourceFile) => {
+    //定义访问器函数，用于递归的遍历节点
+    function visitor(node: ts.Node): ts.Node {
+      if (ts.isCallExpression(node)
+        && ts.isPropertyAccessExpression(node.expression)
+        && node.expression.name.text === methodName
+        && node.arguments.length==1
+        && ts.isArrayLiteralExpression(node.arguments[0])) {
+        //获取原始数组中的元素，并且添加新的元素
+        const elements = [...node.arguments[0].elements,ts.factory.createIdentifier(resourceName)];
+        //更新方法调用，将新数组作为参数传递
+        return ts.factory.updateCallExpression(
+          node,
+          node.expression,
+          node.typeArguments,
+          [ts.factory.createArrayLiteralExpression(elements)]
+        )
+      }
+      return ts.visitEachChild(node, visitor, context);
+    }
+    return ts.visitNode(rootNode, visitor) as ts.SourceFile;
+  }
+
 }
 //此方法用于更新src\admin\admin.module.ts
 function updateAdminModule(entityName: string) {
@@ -67,30 +118,48 @@ function updateAdminModule(entityName: string) {
       //定义更新操作
       const updates = [
         addImportToModule(`${classifiedName}Controller`, `./controllers/${dasherizedName}.controller`),
-        //addToModuleArray(`controllers`,`${classifiedName}Controller`)
+        addToModuleArray(`controllers`, `${classifiedName}Controller`)
       ]
       //应用更新保存变更到AdminModule文件
-      applyTransformationAndSave(tree,adminModulePath,sourceFile,updates);
+      applyTransformationAndSave(tree, adminModulePath, sourceFile, updates);
     }
     return tree;
   }
 }
+function addToModuleArray(arrayName: string, itemName: string): ts.TransformerFactory<ts.SourceFile> {
+  return (context: ts.TransformationContext) => (rootNode: ts.SourceFile) => {
+    //定义访问器函数，用于递归的遍历节点
+    function visitor(node: ts.Node): ts.Node {
+      if (ts.isPropertyAssignment(node)
+        && ts.isIdentifier(node.name)
+        && node.name.text == arrayName
+        && ts.isArrayLiteralExpression(node.initializer)) {
+        const elements = [...node.initializer.elements.map(ele => ele.getText()), itemName];
+        //返回更新后的数组属性节点
+        return ts.factory.updatePropertyAssignment(node, node.name,
+          ts.factory.createArrayLiteralExpression(elements.map(ele => ts.factory.createIdentifier(ele))));
+      }
+      return ts.visitEachChild(node, visitor, context);
+    }
+    return ts.visitNode(rootNode, visitor) as ts.SourceFile;
+  }
+}
 //应用变更并保存文件 
 function applyTransformationAndSave(
-  tree:Tree,filePath:string,sourceFile:ts.SourceFile,
-  transformations:Array<ts.TransformerFactory<ts.SourceFile>>
-){
+  tree: Tree, filePath: string, sourceFile: ts.SourceFile,
+  transformations: Array<ts.TransformerFactory<ts.SourceFile>>
+) {
   //应用变更并获取更新后的源文件 
-  const updatedSourceFile = ts.transform(sourceFile,transformations).transformed[0];
+  const updatedSourceFile = ts.transform(sourceFile, transformations).transformed[0];
   //将更新后的文件内容写入指定的路径
-  tree.overwrite(filePath,ts.createPrinter().printFile(updatedSourceFile));
+  tree.overwrite(filePath, ts.createPrinter().printFile(updatedSourceFile));
 
 }
 //在文件中添加import导入语句
 function addImportToModule(importName: string, importPath: string): ts.TransformerFactory<ts.SourceFile> {
   //返回一个转换工厂函数，用于添加导入语句
   //TransformerFactory是一个高阶函数，会接收一个TransformationContext并返回另一个处理SourceFile的函数
-  return (_context:ts.TransformationContext) => (rootNode:ts.SourceFile)=>{
+  return (_context: ts.TransformationContext) => (rootNode: ts.SourceFile) => {
     //找到文件中的最后一个import语句
     const lastImport = rootNode.statements.filter(ts.isImportDeclaration).pop();
     //创建一个新的导入语句
@@ -102,17 +171,17 @@ function addImportToModule(importName: string, importPath: string): ts.Transform
         false,
         undefined,
         ts.factory.createNamedImports([
-          ts.factory.createImportSpecifier(false,undefined,ts.factory.createIdentifier(importName))
+          ts.factory.createImportSpecifier(false, undefined, ts.factory.createIdentifier(importName))
         ]),
       ),
       ts.factory.createStringLiteral(importPath)
     )
     const updatedStatements = ts.factory.createNodeArray([
-      ...rootNode.statements.slice(0,rootNode.statements.indexOf(lastImport!)+1),
+      ...rootNode.statements.slice(0, rootNode.statements.indexOf(lastImport!) + 1),
       newImport,
-      ...rootNode.statements.slice(rootNode.statements.indexOf(lastImport!)+1),
+      ...rootNode.statements.slice(rootNode.statements.indexOf(lastImport!) + 1),
     ])
-    return ts.factory.updateSourceFile(rootNode,updatedStatements) as ts.SourceFile;
+    return ts.factory.updateSourceFile(rootNode, updatedStatements) as ts.SourceFile;
   }
 }
 function getClassifiedAndDasherizedName(name: string) {
