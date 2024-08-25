@@ -21,14 +21,7 @@
   </thead>
   <tbody id="accessTreeTable">
     {{#each accessTree}}
-      <tr>
-        <td>{{this.name}}</td>
-        <td>类型</td>
-        <td>url</td>
-        <td>状态</td>
-        <td>排序</td>
-        <td>操作</td>
-      </tr>
+      {{> access-node this depth=0}}
     {{/each}}
   </tbody>
 </table>
@@ -51,6 +44,26 @@
     }
   }
   $(function () {
+    function hideChildren($tr,id){
+      const $children = $tr.nextAll('tr[data-parent="'+id+'"]');
+      $children.each(function(){
+        const childId = $(this).data('id');
+        hideChildren($(this),childId);
+      });
+      $children.hide();
+    }
+    $('#accessTreeTable').on('click','.toggle',function(){
+      const $toggle = $(this);
+      const id = $toggle.data('id');
+      const $tr = $toggle.closest('tr');
+      if($tr.nextAll('tr[data-parent="'+id+'"]').is(':visible')){
+        hideChildren($tr,id);
+        $toggle.html(`<i class="bi bi-folder-plus"></i>`);
+      }else{
+         $tr.nextAll('tr[data-parent="'+id+'"]').show();
+         $toggle.html(`<i class="bi bi-folder-minus"></i>`);
+      }
+    });
     $('.sort-text').on('dblclick', function () {
       const $this = $(this);
       const id = $this.data('id');

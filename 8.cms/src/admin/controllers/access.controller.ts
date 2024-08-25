@@ -3,8 +3,6 @@ import { CreateAccessDto, UpdateAccessDto } from 'src/shared/dto/access.dto';
 import { AccessService } from 'src/shared/services/access.service';
 import { AdminExceptionFilter } from '../filters/admin-exception-filter';
 import { Response } from 'express';
-import { ParseOptionalIntPipe } from 'src/shared/pipes/parse-optional-int.pipe';
-
 @UseFilters(AdminExceptionFilter)
 @Controller('admin/accesses')
 export class AccessController {
@@ -16,14 +14,14 @@ export class AccessController {
     @Render('access/access-list')
     async findAll() {
        const accessTree = await this.accessService.findAll();
-       console.log('accessTree',accessTree)
        return {accessTree};
     }
 
     @Get('create')
     @Render('access/access-form')
-    createForm() {
-        return { access: {} }
+    async createForm() {
+        const accessTree = await this.accessService.findAll();
+        return { access: {} ,accessTree}
     }
 
     @Post()
@@ -36,9 +34,10 @@ export class AccessController {
     @Get(':id/edit')
     @Render('access/access-form')
     async editForm(@Param('id', ParseIntPipe) id: number) {
-        const access = await this.accessService.findOne({ where: { id } });
+        const access = await this.accessService.findOne({ where: { id },relations:['parent','children'] });
         if (!access) throw new HttpException('Access not Found', 404);
-        return { access };
+        const accessTree = await this.accessService.findAll();
+        return { access,accessTree };
     }
 
     @Put(':id')

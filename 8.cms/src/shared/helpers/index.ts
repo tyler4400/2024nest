@@ -2,3 +2,5 @@ export * from './eq';
 export * from './range';
 export * from './inc';
 export * from './dec';
+export * from './multiply';
+export * from './json';

@@ -1,0 +1,42 @@
+<tr data-id="{{id}}" data-parent="{{parent.id}}">
+      <td style="padding-left: {{multiply depth 20}}px;">
+        <span class="toggle cursor-pointer" data-id="{{id}}">
+            {{#if children.length}}
+              <i class="bi bi-folder-minus"></i>
+            {{/if}}
+        </span>
+        {{name}}
+      </td>
+      <td>
+        {{#if (eq type 'module')}}
+        <span class="badge bg-primary">模块</span>
+        {{else if (eq type 'menu')}}
+        <span class="badge bg-success">菜单</span>
+        {{else if (eq type 'feature')}}
+          <span class="badge bg-info">功能</span>
+        {{/if}}  
+      </td>
+      <td>{{url}}</td>
+      <td>
+        <span class="status-toggle" data-id="{{this.id}}" data-status="{{this.status}}">
+          {{#if this.status}}
+          <i class="bi bi-check-circle-fill text-success"></i>
+          {{else}}
+          <i class="bi bi-x-circle-fill text-danger"></i>
+          {{/if}}
+        </span>
+      </td>
+      <td>
+        <span class="sort-text" data-id="{{this.id}}">{{this.sort}}</span>
+        <input type="number" class="form-control sort-input d-none" style="width:50%" data-id="{{this.id}}"
+          value="{{this.sort}}">
+      </td>
+      <td>
+        <a href="/admin/accesses/{{this.id}}" class="btn btn-primary btn-sm">查看</a>
+        <a href="/admin/accesses/{{this.id}}/edit" class="btn btn-warning btn-sm">修改</a>
+        <a class="btn btn-danger btn-sm" onclick="deleteAccess({{this.id}})">删除</a>
+      </td>
+</tr>
+{{#each children}}
+  {{> access-node this depth=(inc ../depth)}}
+{{/each}}
