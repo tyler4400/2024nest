@@ -36,6 +36,4 @@ npm install cookie-parser express-session @nestjs/platform-express
 2. 可以使用class-transformer自动转换
 
 
-nest g cms-resource role --collection=./node_modules/cms-resource
-
-nest g generateFiles role 角色 --collection=D:/aproject/2024nest/cms-generator
+nest g generateFiles access 资源 --collection=D:/aproject/2024nest/cms-generator

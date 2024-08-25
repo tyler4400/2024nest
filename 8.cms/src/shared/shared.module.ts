@@ -6,10 +6,14 @@ import { User } from './entities/user.entity';
 import { UserService } from './services/user.service';
 import { IsUsernameUniqueConstraint } from './validators/user-validator';
 import { UtilityService } from './services/utility.service';
+import { Role } from "./entities/role.entity";
+import { RoleService } from "./services/role.service";
+import { Access } from "./entities/access.entity";
+import { AccessService } from "./services/access.service";
 @Global()
 @Module({
-    providers: [IsUsernameUniqueConstraint, ConfigurationService, UtilityService, UserService],
-    exports: [IsUsernameUniqueConstraint, ConfigurationService, UtilityService, UserService],
+    providers: [IsUsernameUniqueConstraint, ConfigurationService, UtilityService, UserService, RoleService, AccessService],
+    exports: [IsUsernameUniqueConstraint, ConfigurationService, UtilityService, UserService, RoleService, AccessService],
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
         TypeOrmModule.forRootAsync({
@@ -22,7 +26,7 @@ import { UtilityService } from './services/utility.service';
                 logging: false, //打印内部真正SQL语句
             })
         }),
-        TypeOrmModule.forFeature([User])
+        TypeOrmModule.forFeature([User, Role, Access])
     ],
 })
 export class SharedModule {

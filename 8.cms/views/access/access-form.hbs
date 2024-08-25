@@ -1,0 +1,18 @@
+<h1>{{#if access.id}}编辑资源{{else}}添加资源{{/if}}</h1>
+<form
+    action="/admin/accesses{{#if access.id}}/{{access.id}}{{/if}}"
+    method="POST">
+    {{#if access.id}}<input type="hidden" name="_method" value="PUT">{{/if}}
+        <div class="mb-3">
+            <label for="name" class="form-label">名称</label>
+            <input type="text" class="form-control" id="name" name="name" value="{{access.name}}">
+        </div>
+        <div class="mb-3">
+            <label for="status" class="form-label">状态</label>
+            <select class="form-control" id="status" name="status">
+                <option value="1" {{#if access.status}}selected{{/if}}>激活</option>
+                <option value="0" {{#unless access.status}}selected{{/unless}}>未激活</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">保存</button>
+</form>

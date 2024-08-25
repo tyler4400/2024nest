@@ -1,6 +1,6 @@
 import { applyDecorators, Body, ClassSerializerInterceptor, Controller, Delete, Get, HttpException, HttpStatus, Inject, LoggerService, Param, ParseIntPipe, Post, Put, SerializeOptions, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CreateUserDto, UpdateUserDto } from 'src/shared/dtos/user.dto';
+import { CreateUserDto, UpdateUserDto } from 'src/shared/dto/user.dto';
 import { User } from 'src/shared/entities/user.entity';
 import { UserService } from 'src/shared/services/user.service';
 import { Result } from 'src/shared/vo/result';
