@@ -39,6 +39,7 @@
         <a href="/admin/users/{{this.id}}" class="btn btn-primary btn-sm">查看</a>
         <a href="/admin/users/{{this.id}}/edit" class="btn btn-warning btn-sm">修改</a>
         <a class="btn btn-danger btn-sm" onclick="deleteUser({{this.id}})">删除</a>
+        <button class="btn btn-info btn-sm" onclick="assignRoles({{this.id}})">分配角色</button>
       </td>
     </tr>
     {{/each}}
@@ -46,7 +47,7 @@
 </table>
 <nav>
   <ul class="pagination">
-    <li class="page-item {{#if (eq page 1)}}disabled{{/if}}" >
+    <li class="page-item {{#if (eq page 1)}}disabled{{/if}}">
       <a class="page-link" href="?page={{dec page}}&keyword={{keyword}}&limit={{limit}}">上一页</a>
     </li>
     {{#each (range 1 pageCount)}}
@@ -61,7 +62,7 @@
     <li class="page-item">
       <form method="GET" action="/admin/users" class="d-inline-block ms-3">
         <input type="hidden" name="keyword" value="{{keyword}}">
-         <input type="hidden" name="page" value="{{page}}">
+        <input type="hidden" name="page" value="{{page}}">
         <div class="input-group">
           <input type="number" name="limit" class="form-control" placeholder="每页条数" value="{{limit}}" min="1">
           <button class="btn btn-outline-secondary" type="submit">设置每页的条数</button>
@@ -70,7 +71,66 @@
     </li>
   </ul>
 </nav>
+<div class="modal fade" id="roleModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">给用户分配角色</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="roleForm">
+          {{#each roles}}
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="{{this.id}}" id="role_{{this.id}}" />
+            <label class="form-check-label" for="role_{{this.id}}">{{this.name}}</label>
+          </div>
+          {{/each}}
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secodary" data-bs-dismiss="modal">关闭</button>
+        <button type="button" class="btn btn-primary" id="saveRoles">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
 <script>
+  let selectedUserId;
+  function assignRoles(userId) {
+    selectedUserId = userId;
+    $.ajax({
+      url: `/admin/users/${userId}`,
+      type: 'GET',
+      headers: { 'accept': 'application/json' },
+      success: function ({ user }) {
+        const roleIds = user.roles.map(role => role.id);
+        $(`#roleForm input[type="checkbox"]`).each(function () {
+          $(this).prop('checked', roleIds.includes(parseInt($(this).val())));
+        })
+        $('#roleModal').modal('show');
+      }
+    })
+  }
+  $('#saveRoles').on('click',function(){
+    const roleIds =  $(`#roleForm input[type="checkbox"]:checked`).map(function(){
+      return $(this).val();
+    }).get();
+    $.ajax({
+      url: `/admin/users/${selectedUserId}/roles`,
+      type: 'PUT',
+      headers: { 'accept': 'application/json' },
+      contentType:'application/json',
+      data:JSON.stringify({roleIds}),
+      success: function ({ user }) {
+        $('#roleModal').modal('hide');
+        alert('权限分配 成功');
+      },
+      error:function(error){
+        alert(error.responseJSON.message);
+      }
+    })
+  });
   function deleteUser(id) {
     if (confirm('确定要删除吗?')) {
       $.ajax({
@@ -81,8 +141,8 @@
             const params = new URLSearchParams(window.location.search);
             params.delete('page');
             params.append('page', 1)
-            const query =  params.toString();
-            window.location = window.location.pathname+'?'+query;
+            const query = params.toString();
+            window.location = window.location.pathname + '?' + query;
           }
         }
       })

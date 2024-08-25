@@ -19,29 +19,30 @@
   </thead>
   <tbody>
     {{#each roles}}
-      <tr>
-        <td>{{this.name}}</td>
-        <td>
-          <span class="status-toggle" data-id="{{this.id}}" data-status="{{this.status}}">
-            {{#if this.status}}
-            <i class="bi bi-check-circle-fill text-success"></i>
-            {{else}}
-            <i class="bi bi-x-circle-fill text-danger"></i>
-            {{/if}}
-          </span>
-        </td>
-        <td>
-          <span class="sort-text" data-id="{{this.id}}">{{this.sort}}</span>
-          <input type="number" class="form-control sort-input d-none" style="width:50%" data-id="{{this.id}}"
-            value="{{this.sort}}">
-        </td>
-        <td>
-          <a href="/admin/roles/{{this.id}}" class="btn btn-primary btn-sm">查看</a>
-          <a href="/admin/roles/{{this.id}}/edit" class="btn btn-warning btn-sm">修改</a>
-          <a class="btn btn-danger btn-sm" onclick="deleteRole({{this.id}})">删除</a>
-        </td>
-      </tr>
-      {{/each}}
+    <tr>
+      <td>{{this.name}}</td>
+      <td>
+        <span class="status-toggle" data-id="{{this.id}}" data-status="{{this.status}}">
+          {{#if this.status}}
+          <i class="bi bi-check-circle-fill text-success"></i>
+          {{else}}
+          <i class="bi bi-x-circle-fill text-danger"></i>
+          {{/if}}
+        </span>
+      </td>
+      <td>
+        <span class="sort-text" data-id="{{this.id}}">{{this.sort}}</span>
+        <input type="number" class="form-control sort-input d-none" style="width:50%" data-id="{{this.id}}"
+          value="{{this.sort}}">
+      </td>
+      <td>
+        <a href="/admin/roles/{{this.id}}" class="btn btn-primary btn-sm">查看</a>
+        <a href="/admin/roles/{{this.id}}/edit" class="btn btn-warning btn-sm">修改</a>
+        <a class="btn btn-danger btn-sm" onclick="deleteRole({{this.id}})">删除</a>
+        <button class="btn btn-info btn-sm" onclick="assignAccesses({{this.id}})">分配资源</button>
+      </td>
+    </tr>
+    {{/each}}
   </tbody>
 </table>
 <nav>
@@ -70,8 +71,44 @@
     </li>
   </ul>
 </nav>
+<div class="modal fade" id="accessModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">给角色分配资源</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="accessForm">
+          <div id="accessTree" class="border ronded p-3"></div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secodary" data-bs-dismiss="modal">关闭</button>
+        <button type="button" class="btn btn-primary" id="saveAccesses">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
 <script>
-  function deleteRole (id) {
+  const accessTree = {{{ json accessTree }}};
+  let selectedRoleId;
+  function assignAccesses(roleId) {
+    selectedRoleId = roleId;
+    $.ajax({
+      url: `/admin/roles/${roleId}`,
+      type: 'GET',
+      headers: { 'accept': 'application/json' },
+      success: function ({ role }) {
+        const accessIds = role.accesses.map(access => access.id);
+        $(`#accessForm input[type="checkbox"]`).each(function () {
+          $(this).prop('checked', accessIds.includes(parseInt($(this).val())));
+        })
+        $('#accessModal').modal('show');
+      }
+    })
+  }
+  function deleteRole(id) {
     if (confirm('确定要删除吗?')) {
       $.ajax({
         url: `/admin/roles/${id}`,
@@ -88,7 +125,60 @@
       })
     }
   }
+  function renderTree(accesses) {
+    let html = `<ul class="list-unstyled">`;
+    accesses.forEach(function (access) {
+      html += `
+          <li class="mb-2">
+            <div class="d-flex align-items-center">
+               ${access.children?.length > 0 ? '<span class="toggle me-2 cursor-pointer"><i class="bi bi-folder-minus"></i></span>' : '<span class="me-4"></span>'}
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input parent-checkbox" data-id="${access.id}" value="${access.id}"/>
+                  ${access.name}
+                </label>
+            </div>
+            ${access.children?.length > 0 ? `<div class="children ms-4">${renderTree(access.children)}</div>` : ``}
+          </li>
+        `;
+    });
+    html += '</ul>';
+    return html;
+  }
   $(function () {
+    $('#accessTree').html(renderTree(accessTree));
+    $('#saveAccesses').on('click', function () {
+      const accessIds = $(`#accessForm input[type="checkbox"]:checked`).map(function () {
+        return $(this).val();
+      }).get();
+      $.ajax({
+        url: `/admin/roles/${selectedRoleId}/accesses`,
+        type: 'PUT',
+        headers: { 'accept': 'application/json' },
+        contentType: 'application/json',
+        data: JSON.stringify({ accessIds }),
+        success: function ({ user }) {
+          $('#accessModal').modal('hide');
+          alert('资源分配成功');
+        },
+        error: function (error) {
+          alert(error.responseJSON.message);
+        }
+      })
+    });
+    $('body').on('click', '.toggle', function () {
+      const children = $(this).parent().siblings('.children');
+      if (children.is(':visible')) {
+        children.hide();
+        $(this).html(`<i class="bi bi-folder-plus"></i>`);
+      } else {
+        children.show();
+        $(this).html(`<i class="bi bi-folder-minus"></i>`);
+      }
+    });
+    $('body').on('change', '.parent-checkbox', function () {
+      const isChecked = $(this).is(':checked');
+      $(this).closest('li').find('.children input[type="checkbox"]').prop('checked', isChecked)
+    })
     $('.sort-text').on('dblclick', function () {
       const $this = $(this);
       const id = $this.data('id');

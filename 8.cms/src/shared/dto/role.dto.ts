@@ -21,3 +21,7 @@ export class UpdateRoleDto extends PartialTypeFromSwagger(PartialType(CreateRole
     @IdValidators()
     id: number;
 }
+
+export class UpdateRoleAccessesDto{
+    readonly accessIds:number[]
+}

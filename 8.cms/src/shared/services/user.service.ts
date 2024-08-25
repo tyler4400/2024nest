@@ -1,13 +1,15 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../entities/user.entity";
-import {Repository,Like} from 'typeorm';
+import {Role} from '../entities/role.entity';
+import {Repository,Like,In} from 'typeorm';
 import { MySQLBaseService } from "./mysql-base.service";
-
+import { UpdateUserRolesDto } from "../dto/user.dto";
 @Injectable()
 export class UserService extends MySQLBaseService<User> {
   constructor(
-    @InjectRepository(User) protected repository:Repository<User>
+    @InjectRepository(User) protected repository:Repository<User>,
+    @InjectRepository(Role) protected roleRepository:Repository<Role>
   ){
     super(repository);
   }
@@ -30,5 +32,11 @@ export class UserService extends MySQLBaseService<User> {
       take:limit
     });
     return {users,total}
+  }
+  async updateRoles(id:number,updateUserRolesDto: UpdateUserRolesDto){
+    const user = await this.repository.findOneBy({id});
+    const roles = await this.roleRepository.findBy({id:In(updateUserRolesDto.roleIds)});
+    user.roles = roles;
+    await this.repository.save(user);
   }
 }

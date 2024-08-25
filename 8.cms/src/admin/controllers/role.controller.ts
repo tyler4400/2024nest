@@ -1,15 +1,17 @@
 import { Controller, Get, Render, Post, Redirect, Body, UseFilters, HttpException, Param, ParseIntPipe, Put, Delete, Headers, Res, Query } from '@nestjs/common';
-import { CreateRoleDto, UpdateRoleDto } from 'src/shared/dto/role.dto';
+import { CreateRoleDto, UpdateRoleAccessesDto, UpdateRoleDto } from 'src/shared/dto/role.dto';
 import { RoleService } from 'src/shared/services/role.service';
 import { AdminExceptionFilter } from '../filters/admin-exception-filter';
 import { Response } from 'express';
 import { ParseOptionalIntPipe } from 'src/shared/pipes/parse-optional-int.pipe';
+import { AccessService } from 'src/shared/services/access.service';
 
 @UseFilters(AdminExceptionFilter)
 @Controller('admin/roles')
 export class RoleController {
     constructor(
-        private readonly roleService: RoleService
+        private readonly roleService: RoleService,
+        private readonly accessService: AccessService
     ) { }
 
     @Get()
@@ -19,7 +21,8 @@ export class RoleController {
         @Query('limit', new ParseOptionalIntPipe(10)) limit: number) {
         const { roles, total } = await this.roleService.findAllWithPagination(page, limit, keyword);
         const pageCount = Math.ceil(total / limit);
-        return { roles, keyword, page, limit, pageCount };
+        const accessTree = await this.accessService.findAll();
+        return { roles, keyword, page, limit, pageCount ,accessTree};
     }
 
     @Get('create')
@@ -38,7 +41,7 @@ export class RoleController {
     @Get(':id/edit')
     @Render('role/role-form')
     async editForm(@Param('id', ParseIntPipe) id: number) {
-        const role = await this.roleService.findOne({ where: { id } });
+        const role = await this.roleService.findOne({ where: { id },relations:['accesses'] });
         if (!role) throw new HttpException('Role not Found', 404);
         return { role };
     }
@@ -60,10 +63,18 @@ export class RoleController {
     }
 
     @Get(':id')
-    @Render('role/role-detail')
-    async findOne(@Param('id', ParseIntPipe) id: number) {
-        const role = await this.roleService.findOne({ where: { id } });
+    async findOne(@Param('id', ParseIntPipe) id: number, @Res() res: Response, @Headers('accept') accept: string) {
+        const role = await this.roleService.findOne({ where: { id } ,relations:['accesses']});
         if (!role) throw new HttpException('Role not Found', 404);
-        return { role };
+        if(accept === 'application/json'){
+            res.json({role});
+        }else{
+            res.render('user/user-detail',{role});
+        }
+    }
+    @Put(':id/accesses')
+    async assignRoles(@Param('id', ParseIntPipe) id: number, @Body() updateRoleAccessesDto: UpdateRoleAccessesDto) {
+        await this.roleService.updateAccesses(id, updateRoleAccessesDto);
+        return { success: true };
     }
 }

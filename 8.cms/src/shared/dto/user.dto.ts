@@ -73,4 +73,6 @@ function IsSuperValidators() {
     return applyDecorators(IsBoolean(), IsOptional(), Type(() => Boolean))
 }
 
-
+export class UpdateUserRolesDto{
+    readonly roleIds:number[]
+}

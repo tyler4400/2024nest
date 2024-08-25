@@ -1,7 +1,7 @@
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose, Transform } from 'class-transformer';
-import {Entity,Column,PrimaryGeneratedColumn,CreateDateColumn,UpdateDateColumn} from 'typeorm';
-//实体会映射为数据库里的一张表
+import {Entity,Column,PrimaryGeneratedColumn,CreateDateColumn,UpdateDateColumn,ManyToMany,JoinTable} from 'typeorm';
+import {Role} from './role.entity';
 @Entity()
 export class User{
     @PrimaryGeneratedColumn()//自增的主键列
@@ -36,6 +36,10 @@ export class User{
     @Column({default:1})//是否生效 0表示无效，1表示有效
     @ApiProperty({description:'生效状态',example:1})
     status:number
+
+    @ManyToMany(()=>Role)
+    @JoinTable()
+    roles:Role[]
 
     @Column({default:false})
     @ApiProperty({description:'是否超级管理员',example:true})

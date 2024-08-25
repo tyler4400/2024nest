@@ -17,8 +17,8 @@
         <label for="name" class="form-label">类型</label>
         <select class="form-control" id="type" name="type">
             <option value="module" {{#if (eq access.type 'module' )}}selected{{/if}}>模块</option>
-            <option value="module" {{#if (eq access.type 'menu' )}}selected{{/if}}>菜单</option>
-            <option value="module" {{#if (eq access.type 'feature' )}}selected{{/if}}>功能</option>
+            <option value="menu" {{#if (eq access.type 'menu' )}}selected{{/if}}>菜单</option>
+            <option value="feature" {{#if (eq access.type 'feature' )}}selected{{/if}}>功能</option>
         </select>
     </div>
     <div class="mb-3">
