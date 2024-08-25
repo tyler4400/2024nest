@@ -37,3 +37,5 @@ npm install cookie-parser express-session @nestjs/platform-express
 
 
 nest g cms-resource role --collection=./node_modules/cms-resource
+
+nest g generateFiles role 角色 --collection=D:/aproject/2024nest/cms-generator

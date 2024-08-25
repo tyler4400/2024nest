@@ -1,0 +1,18 @@
+<h1>{{#if <%= camelize(entityName) %>.id}}编辑<%=title %>{{else}}添加<%= title %>{{/if}}</h1>
+<form
+    action="/admin/<%= dasherize(plural(entityName)) %>{{#if <%= camelize(entityName) %>.id}}/{{<%= camelize(entityName) %>.id}}{{/if}}"
+    method="POST">
+    {{#if <%= camelize(entityName) %>.id}}<input type="hidden" name="_method" value="PUT">{{/if}}
+        <div class="mb-3">
+            <label for="name" class="form-label">名称</label>
+            <input type="text" class="form-control" id="name" name="name" value="{{<%= camelize(entityName) %>.name}}">
+        </div>
+        <div class="mb-3">
+            <label for="status" class="form-label">状态</label>
+            <select class="form-control" id="status" name="status">
+                <option value="1" {{#if <%=camelize(entityName) %>.status}}selected{{/if}}>激活</option>
+                <option value="0" {{#unless <%=camelize(entityName) %>.status}}selected{{/unless}}>未激活</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">保存</button>
+</form>

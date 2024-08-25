@@ -40,13 +40,40 @@ tsc
 
 ## 如何运行
 ```js
-schematics .:generateFiles --name=roleManage --path=角色 --no-dry-run
+schematics .:generateFiles --name=role --path=角色 --no-dry-run
 
 RoleManger
 
 ```
 
 ```js
-
+nest g generateFiles role 角色 --collection=D:/aproject/2024nest/cms-generator
 ```
+
+```js
+import { Module } from '@nestjs/common';
+import { DashboardController } from './controllers/dashboard.controller';
+import { UserController } from './controllers/user.controller';
+@Module({
+    controllers: [DashboardController, UserController]
+})
+export class AdminModule {
+}
+```
+
+
+1.定义要修改的文件路径 
+2.读取指定的路径的文件内容，并转换为字符串
+3.根据源代码字符串创建对应AST抽象语法树 ts.SourceFile
+4.定义TS转换工厂函数，函数的参数就是AST语法树的根节点
+  1.找到文件中的最后一个import语句
+  2.创建一个新的导入语句 import { RoleController } from './controllers/role.controller';
+  3.创建新的语句数组，插入最的 import语句
+  4.更新语法树，四条statements变成五条statements
+5.应用变更并获取更新后的源文件 
+6.将更新后的文件内容写入指定的路径
+
+
+
+
 

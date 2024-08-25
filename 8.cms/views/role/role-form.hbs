@@ -1,0 +1,18 @@
+<h1>{{#if role.id}}编辑角色{{else}}添加角色{{/if}}</h1>
+<form
+    action="/admin/roles{{#if role.id}}/{{role.id}}{{/if}}"
+    method="POST">
+    {{#if role.id}}<input type="hidden" name="_method" value="PUT">{{/if}}
+        <div class="mb-3">
+            <label for="name" class="form-label">名称</label>
+            <input type="text" class="form-control" id="name" name="name" value="{{role.name}}">
+        </div>
+        <div class="mb-3">
+            <label for="status" class="form-label">状态</label>
+            <select class="form-control" id="status" name="status">
+                <option value="1" {{#if role.status}}selected{{/if}}>激活</option>
+                <option value="0" {{#unless role.status}}selected{{/unless}}>未激活</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">保存</button>
+</form>
