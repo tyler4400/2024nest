@@ -2,7 +2,6 @@ import { Controller, Get, Render, Post, Redirect, Body, UseFilters, HttpExceptio
 import { Create<%= classify(entityName) %>Dto, Update<%= classify(entityName) %>Dto } from 'src/shared/dto/<%= dasherize(entityName) %>.dto';
 import { <%= classify(entityName) %>Service } from 'src/shared/services/<%= dasherize(entityName) %>.service';
 import { AdminExceptionFilter } from '../filters/admin-exception-filter';
-import { UtilityService } from 'src/shared/services/utility.service';
 import { Response } from 'express';
 import { ParseOptionalIntPipe } from 'src/shared/pipes/parse-optional-int.pipe';
 
@@ -10,8 +9,7 @@ import { ParseOptionalIntPipe } from 'src/shared/pipes/parse-optional-int.pipe';
 @Controller('admin/<%= dasherize(plural(entityName)) %>')
 export class <%= classify(entityName) %>Controller {
     constructor(
-        private readonly <%= camelize(entityName) %>Service: <%= classify(entityName) %>Service,
-        private readonly utilityService: UtilityService
+        private readonly <%= camelize(entityName) %>Service: <%= classify(entityName) %>Service
     ) { }
 
     @Get()
@@ -47,11 +45,6 @@ export class <%= classify(entityName) %>Controller {
 
     @Put(':id')
     async update(@Param('id', ParseIntPipe) id: number, @Body() update<%= classify(entityName) %>Dto: Update<%= classify(entityName) %>Dto, @Res({ passthrough: true }) res: Response, @Headers('accept') accept: string) {
-        if (update<%= classify(entityName) %>Dto.password) {
-            update<%= classify(entityName) %>Dto.password = await this.utilityService.hashPassword(update<%= classify(entityName) %>Dto.password);
-        } else {
-            delete update<%= classify(entityName) %>Dto.password;
-        }
         await this.<%= camelize(entityName) %>Service.update(id, update<%= classify(entityName) %>Dto);
         if (accept === 'application/json') {
             return { success: true };

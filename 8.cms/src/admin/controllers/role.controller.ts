@@ -2,7 +2,6 @@ import { Controller, Get, Render, Post, Redirect, Body, UseFilters, HttpExceptio
 import { CreateRoleDto, UpdateRoleDto } from 'src/shared/dto/role.dto';
 import { RoleService } from 'src/shared/services/role.service';
 import { AdminExceptionFilter } from '../filters/admin-exception-filter';
-import { UtilityService } from 'src/shared/services/utility.service';
 import { Response } from 'express';
 import { ParseOptionalIntPipe } from 'src/shared/pipes/parse-optional-int.pipe';
 
@@ -10,8 +9,7 @@ import { ParseOptionalIntPipe } from 'src/shared/pipes/parse-optional-int.pipe';
 @Controller('admin/roles')
 export class RoleController {
     constructor(
-        private readonly roleService: RoleService,
-        private readonly utilityService: UtilityService
+        private readonly roleService: RoleService
     ) { }
 
     @Get()
@@ -47,11 +45,6 @@ export class RoleController {
 
     @Put(':id')
     async update(@Param('id', ParseIntPipe) id: number, @Body() updateRoleDto: UpdateRoleDto, @Res({ passthrough: true }) res: Response, @Headers('accept') accept: string) {
-        if (updateRoleDto.password) {
-            updateRoleDto.password = await this.utilityService.hashPassword(updateRoleDto.password);
-        } else {
-            delete updateRoleDto.password;
-        }
         await this.roleService.update(id, updateRoleDto);
         if (accept === 'application/json') {
             return { success: true };

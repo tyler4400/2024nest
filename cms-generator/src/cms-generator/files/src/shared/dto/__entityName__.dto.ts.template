@@ -20,13 +20,4 @@ export class Create<%= classify(entityName) %>Dto {
 export class Update<%= classify(entityName) %>Dto extends PartialTypeFromSwagger(PartialType(Create<%= classify(entityName) %>Dto)) {
     @IdValidators()
     id: number;
-
-    @IsString()
-    @IsOptional()
-    @ApiProperty({ description: '用户名', example: 'nick' })
-    username: string;
-
-    @ApiProperty({ description: '密码', example: '666666' })
-    @IsOptional()
-    password: string;
 }

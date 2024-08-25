@@ -2,7 +2,6 @@ import { Controller, Get, Render, Post, Redirect, Body, UseFilters, HttpExceptio
 import { CreateAccessDto, UpdateAccessDto } from 'src/shared/dto/access.dto';
 import { AccessService } from 'src/shared/services/access.service';
 import { AdminExceptionFilter } from '../filters/admin-exception-filter';
-import { UtilityService } from 'src/shared/services/utility.service';
 import { Response } from 'express';
 import { ParseOptionalIntPipe } from 'src/shared/pipes/parse-optional-int.pipe';
 
@@ -10,18 +9,15 @@ import { ParseOptionalIntPipe } from 'src/shared/pipes/parse-optional-int.pipe';
 @Controller('admin/accesses')
 export class AccessController {
     constructor(
-        private readonly accessService: AccessService,
-        private readonly utilityService: UtilityService
+        private readonly accessService: AccessService
     ) { }
 
     @Get()
     @Render('access/access-list')
-    async findAll(@Query('keyword') keyword: string = '',
-        @Query('page', new ParseOptionalIntPipe(1)) page: number,
-        @Query('limit', new ParseOptionalIntPipe(10)) limit: number) {
-        const { accesses, total } = await this.accessService.findAllWithPagination(page, limit, keyword);
-        const pageCount = Math.ceil(total / limit);
-        return { accesses, keyword, page, limit, pageCount };
+    async findAll() {
+       const accessTree = await this.accessService.findAll();
+       console.log('accessTree',accessTree)
+       return {accessTree};
     }
 
     @Get('create')
@@ -47,11 +43,6 @@ export class AccessController {
 
     @Put(':id')
     async update(@Param('id', ParseIntPipe) id: number, @Body() updateAccessDto: UpdateAccessDto, @Res({ passthrough: true }) res: Response, @Headers('accept') accept: string) {
-        if (updateAccessDto.password) {
-            updateAccessDto.password = await this.utilityService.hashPassword(updateAccessDto.password);
-        } else {
-            delete updateAccessDto.password;
-        }
         await this.accessService.update(id, updateAccessDto);
         if (accept === 'application/json') {
             return { success: true };

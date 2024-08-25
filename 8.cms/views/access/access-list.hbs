@@ -12,64 +12,26 @@
   <thead>
     <tr>
       <td>名称</td>
+      <td>类型</td>
+      <td>url</td>
       <td>状态</td>
       <td>排序</td>
       <td>操作</td>
     </tr>
   </thead>
-  <tbody>
-    {{#each accesses}}
+  <tbody id="accessTreeTable">
+    {{#each accessTree}}
       <tr>
         <td>{{this.name}}</td>
-        <td>
-          <span class="status-toggle" data-id="{{this.id}}" data-status="{{this.status}}">
-            {{#if this.status}}
-            <i class="bi bi-check-circle-fill text-success"></i>
-            {{else}}
-            <i class="bi bi-x-circle-fill text-danger"></i>
-            {{/if}}
-          </span>
-        </td>
-        <td>
-          <span class="sort-text" data-id="{{this.id}}">{{this.sort}}</span>
-          <input type="number" class="form-control sort-input d-none" style="width:50%" data-id="{{this.id}}"
-            value="{{this.sort}}">
-        </td>
-        <td>
-          <a href="/admin/accesses/{{this.id}}" class="btn btn-primary btn-sm">查看</a>
-          <a href="/admin/accesses/{{this.id}}/edit" class="btn btn-warning btn-sm">修改</a>
-          <a class="btn btn-danger btn-sm" onclick="deleteAccess({{this.id}})">删除</a>
-        </td>
+        <td>类型</td>
+        <td>url</td>
+        <td>状态</td>
+        <td>排序</td>
+        <td>操作</td>
       </tr>
-      {{/each}}
+    {{/each}}
   </tbody>
 </table>
-<nav>
-  <ul class="pagination">
-    <li class="page-item {{#if (eq page 1)}}disabled{{/if}}">
-      <a class="page-link" href="?page={{dec page}}&keyword={{keyword}}&limit={{limit}}">上一页</a>
-    </li>
-    {{#each (range 1 pageCount)}}
-    <li class="page-item {{#if (eq this ../page)}}active{{/if}}">
-      <a class="page-link" href="?page={{this}}&keyword={{../keyword}}&limit={{../limit}}">{{this}}</a>
-    </li>
-    {{/each}}
-
-    <li class="page-item {{#if (eq page pageCount)}}disabled{{/if}}">
-      <a class="page-link" href="?page={{inc page}}&keyword={{keyword}}&limit={{limit}}">下一页</a>
-    </li>
-    <li class="page-item">
-      <form method="GET" action="/admin/accesses" class="d-inline-block ms-3">
-        <input type="hidden" name="keyword" value="{{keyword}}">
-        <input type="hidden" name="page" value="{{page}}">
-        <div class="input-group">
-          <input type="number" name="limit" class="form-control" placeholder="每页条数" value="{{limit}}" min="1">
-          <button class="btn btn-outline-secondary" type="submit">设置每页的条数</button>
-        </div>
-      </form>
-    </li>
-  </ul>
-</nav>
 <script>
   function deleteAccess (id) {
     if (confirm('确定要删除吗?')) {

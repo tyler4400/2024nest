@@ -20,13 +20,4 @@ export class CreateRoleDto {
 export class UpdateRoleDto extends PartialTypeFromSwagger(PartialType(CreateRoleDto)) {
     @IdValidators()
     id: number;
-
-    @IsString()
-    @IsOptional()
-    @ApiProperty({ description: '用户名', example: 'nick' })
-    username: string;
-
-    @ApiProperty({ description: '密码', example: '666666' })
-    @IsOptional()
-    password: string;
 }
