@@ -4,7 +4,7 @@ import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateCol
 } from 'typeorm';
 import { Category } from './category.entity';
 import { Tag } from './tag.entity';
-
+import { ArticleStateEnum } from '../enums/article.enum';
 @Entity()
 export class Article {
     @PrimaryGeneratedColumn()
@@ -27,6 +27,14 @@ export class Article {
     @ManyToMany(()=>Tag)
     @JoinTable()
     tags:Tag[]
+
+    @Column({ type:'enum',enum:ArticleStateEnum,default:'draft' })
+    @ApiProperty({ description: '审核状态', example: '草稿' })
+    state: ArticleStateEnum;
+
+    @Column({ type:'text',nullable:true })
+    @ApiProperty({ description: '审核不通过原因', example: '内容不合要求' })
+    rejectionReason: string;
 
     @Column({ default: 1 })
     @ApiProperty({ description: '生效状态', example: 1 })

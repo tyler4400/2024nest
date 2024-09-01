@@ -57,26 +57,63 @@
         ImageUpload,
         ImageResize,
         ImageStyle,
-        SimpleUploadAdapter 
+        SimpleUploadAdapter,
+        Plugin
     } from 'ckeditor5';
-    //filerepository-no-upload-adapter 
+    //用于获取文件上传的签名
+    async function getSignature(filename) {
+        const response = await fetch(`/admin/cos-signature?key=${encodeURIComponent(filename)}`);
+        //返回签名信息的JSON数据
+        return response.json();
+    }
+    class COSUploadAdaptor {
+        //接收一个文件 加载器的实例
+        constructor(loader) {
+            this.loader = loader;
+        }
+        //上传方法，负责将文件上传到COS
+        async upload() {
+            //等待加载器获取要上传的文件 
+            const file = await this.loader.file;
+            //获取文件的上传签名信息
+            const signature = await getSignature(file.name);
+            //从签名信息中解构出存储桶 区域 文件键名和签名
+            const { sign, key, bucket, region } = signature;
+            //构建上传的url路径
+            const url = `https://${bucket}.cos.${region}.myqcloud.com/${key}`;
+            return fetch(url, {
+                method: 'PUT',//上传新的文件 
+                headers: { Authorization: sign },//设置请求头，包含认证签名信息
+                body: file,//请求体为文件本身的内容
+            }).then(response => {
+                return { default: response.url }
+            })
+        }
+    }
+    class COSUploadAdaptorPlugin extends Plugin {
+        //静态方法，定义插件的依赖关系
+        static get requires() {
+            return [ImageUpload];
+        }
+        init() {//插件的初始化方法
+            //获取文件库插件 设置创建上传适配器的函数
+            this.editor.plugins.get('FileRepository').createUploadAdapter = (fileLoader) => new COSUploadAdaptor(fileLoader)
+        }
+    }
     ClassicEditor
         .create(document.querySelector('#editor'), {
             plugins: [Essentials, Bold, Italic, Font, Paragraph, Image,
-            ImageToolbar,ImageResize,ImageStyle,ImageUpload,SimpleUploadAdapter ],
-            image:{
-                toolbar:['imageTextAlternative','imageStyle:side','resizeImage:50','resizeImage:75','resizeImage:original']
+                ImageToolbar, ImageResize, ImageStyle, ImageUpload, COSUploadAdaptorPlugin],
+            image: {
+                toolbar: ['imageTextAlternative', 'imageStyle:side', 'resizeImage:50', 'resizeImage:75', 'resizeImage:original']
             },
             toolbar: {
                 items: [
                     'undo', 'redo', '|', 'bold', 'italic', '|',
                     'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', '|', 'insertImage'
                 ]
-            },
-            simpleUpload:{
-                uploadUrl:'/admin/upload'
             }
-        }) 
+        })
         .then(editor => {
             const form = document.getElementById('articleForm');
             const contentInput = document.getElementById('contentInput');

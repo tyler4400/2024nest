@@ -6,16 +6,38 @@ import { Response } from 'express';
 import { ParseOptionalIntPipe } from 'src/shared/pipes/parse-optional-int.pipe';
 import { CategoryService } from 'src/shared/services/category.service';
 import { TagService } from 'src/shared/services/tag.service';
-
+import { ArticleStateEnum } from 'src/shared/enums/article.enum';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 @UseFilters(AdminExceptionFilter)
 @Controller('admin/articles')
 export class ArticleController {
     constructor(
         private readonly articleService: ArticleService,
         private readonly categoryService: CategoryService,
-        private readonly tagService: TagService
+        private readonly tagService: TagService,
+        private readonly eventEmitter:EventEmitter2
     ) { }
-
+    @Put(':id/submit')//提交审核
+    async submitForReview(@Param('id',ParseIntPipe) id:number){
+        await this.articleService.update(id,{state:ArticleStateEnum.PENDING});
+        this.eventEmitter.emit('article.submitted',{articleId:id});
+        return {success:true}
+    }
+    @Put(':id/approve')//审核通过
+    async approveArtice(@Param('id',ParseIntPipe) id:number){
+        await this.articleService.update(id,{state:ArticleStateEnum.PUBLISHED,rejectionReason:null});
+        return {success:true}
+    }
+    @Put(':id/reject')//审核不通过
+    async rejectArticle(@Param('id',ParseIntPipe) id:number,@Body('rejectionReason') rejectionReason:string){
+        await this.articleService.update(id,{state:ArticleStateEnum.REJECTED,rejectionReason});
+        return {success:true}
+    }
+    @Put(':id/withdraw')//撤回已经发布的文章
+    async withdrawArticle(@Param('id',ParseIntPipe) id:number){
+        await this.articleService.update(id,{state:ArticleStateEnum.WITHDRAWN});
+        return {success:true}
+    }
     @Get()
     @Render('article/article-list')
     async findAll(@Query('keyword') keyword: string = '',

@@ -27,4 +27,16 @@ export class ConfigurationService{
         password:this.mysqlPassword
     }
    }
+   get cosSecretId():string {
+    return this.configService.get<string>('COS_SECRET_ID');
+   }
+   get cosSecretKey():string {
+    return this.configService.get<string>('COS_SECRET_KEY');
+   }
+   get cosBucket():string {
+    return this.configService.get<string>('COS_BUCKET');
+   }
+   get cosRegion():string {
+    return this.configService.get<string>('COS_REGION');
+   }
 }

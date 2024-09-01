@@ -6,6 +6,7 @@ import { MySQLBaseService } from "./mysql-base.service";
 import { CreateArticleDto, UpdateArticleDto } from "../dto/article.dto";
 import { Category } from "../entities/category.entity";
 import { Tag } from "../entities/tag.entity";
+import { ArticleStateEnum } from "../enums/article.enum";
 
 @Injectable()
 export class ArticleService extends MySQLBaseService<Article> {
@@ -39,6 +40,7 @@ export class ArticleService extends MySQLBaseService<Article> {
     return { articles, total };
   }
   async create(createArticleDto:CreateArticleDto){
+    createArticleDto.state = ArticleStateEnum.DRAFT;
     const {categoryIds,tagIds,...articleDto} = createArticleDto;
     const article = this.repository.create(articleDto);
     if(categoryIds){
@@ -52,6 +54,9 @@ export class ArticleService extends MySQLBaseService<Article> {
   async update(id:number,updateArticleDto:UpdateArticleDto){
     const {categoryIds,tagIds,...articleDto} = updateArticleDto;
     const article = await this.repository.findOne({where:{id}, relations:['categories','tags']});
+    if(article.state === ArticleStateEnum.REJECTED||article.state === ArticleStateEnum.WITHDRAWN){
+      article.state = ArticleStateEnum.DRAFT;
+    }
     if (!article) throw new NotFoundException('Article not Found');
     Object.assign(article,articleDto);
     if(categoryIds){

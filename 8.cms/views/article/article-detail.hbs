@@ -13,22 +13,148 @@
     <label class="form-label">分类:</label>
     <p class="form-control-plaintext">
         {{#each article.categories}}
-         <span class="badge bg-secondary">{{this.name}}</span>
+        <span class="badge bg-secondary">{{article.name}}</span>
         {{/each}}
     </p>
 </div>
 <div class="mb-3">
     <label class="form-label">标签:</label>
-   <p class="form-control-plaintext">
+    <p class="form-control-plaintext">
         {{#each article.tags}}
-         <span class="badge bg-info text-dark">{{this.name}}</span>
+        <span class="badge bg-info text-dark">{{article.name}}</span>
         {{/each}}
     </p>
 </div>
 <div class="mb-3">
+    <label class="form-label">审核状态:</label>
+    <p class="form-control-plaintext">
+        {{#if (eq article.state 'draft')}}<span class="badge bg-secondary">草稿</span>{{/if}}
+        {{#if (eq article.state 'pending')}}<span class="badge bg-warning text-dark">待审核</span>{{/if}}
+        {{#if (eq article.state 'published')}}<span class="badge bg-success">审核通过</span>{{/if}}
+        {{#if (eq article.state 'rejected')}}<span class="badge bg-danger">审核不通过</span>{{/if}}
+        {{#if (eq article.state 'withdrawn')}}<span class="badge bg-dark">已撤回</span>{{/if}}
+    </p>
+</div>
+{{#if (eq article.state 'rejected')}}
+<div class="mb-3">
+    <label class="form-label">审核不通过原因:</label>
+    <p class="form-control-plaintext">
+        {{article.rejectionReason}}
+    </p>
+</div>
+{{/if}}
+
+<div class="mb-3">
     <label class="form-label">状态:</label>
     <p class="form-control-plaintext">{{#if article.status}}激活{{else}}未激活{{/if}}</p>
 </div>
-<a href="/admin/articles/{{article.id}}/edit"
-    class="btn btn-warning btn-sm">修改</a>
+<a href="/admin/articles/{{article.id}}/edit" class="btn btn-warning btn-sm">修改</a>
 <a href="/admin/articles" class="btn btn-secondary btn-sm">返回列表</a>
+{{#if (eq article.state 'draft')}}
+<button class="btn btn-warning btn-sm" onclick="submitForReview({{article.id}})">提交审核</button>
+{{/if}}
+{{#if (eq article.state 'pending')}}
+<button class="btn btn-warning btn-sm" onclick="approveArticle({{article.id}})">审核通过</button>
+<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal-{{article.id}}">审核不通过</button>
+<div class="modal fade" id="rejectModal-{{article.id}}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">审核不通过</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="rejectionReason-{{article.id}}" class="form-label">不通过的原因</label>
+                    <textarea class="form-control" id="rejectionReason-{{article.id}}" name="rejectionReason"
+                        rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secodary" data-bs-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="rejectArticle({{article.id}})">提交</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{/if}}
+{{#if (eq article.state 'published')}}
+<button class="btn btn-danger btn-sm" onclick="withdrawArticle({{article.id}})">撤回</button>
+{{/if}}
+
+<script>
+    function withdrawArticle(id) {
+        if (confirm('确定要撤消审核通过吗?')) {
+            $.ajax({
+                url: `/admin/articles/${id}/withdraw`,
+                type: 'PUT',
+                success: function (data) {
+                    if (data.success) {
+                        location.reload();
+                    }
+                },
+                error: function (error) {
+                    console.error(error);
+                    alert('撤消审核通过失败');
+                }
+            })
+        }
+    }
+    function rejectArticle(id) {
+        const rejectionReason = $(`#rejectionReason-${id}`).val();
+        if (rejectionReason.trim() === '') {
+            alert('请填写审核不通过的原因');
+            return;
+        }
+        $.ajax({
+            url: `/admin/articles/${id}/reject`,
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify({ rejectionReason }),
+            success: function (data) {
+                if (data.success) {
+                    location.reload();
+                }
+            },
+            error: function (error) {
+                console.error(error);
+                alert('审核不通过失败');
+            }
+        })
+    }
+    function approveArticle(id) {
+        if (confirm('确定要审核通过吗?')) {
+            $.ajax({
+                url: `/admin/articles/${id}/approve`,
+                type: 'PUT',
+                success: function (data) {
+                    if (data.success) {
+                        location.reload();
+                    }
+                },
+                error: function (error) {
+                    console.error(error);
+                    alert('审核通过失败');
+                }
+            })
+        }
+    }
+    function submitForReview(id) {
+        if (confirm('确定要提交审核吗?')) {
+            $.ajax({
+                url: `/admin/articles/${id}/submit`,
+                type: 'PUT',
+                success: function (data) {
+                    if (data.success) {
+                        location.reload();
+                    }
+                },
+                error: function (error) {
+                    console.error(error);
+                    alert('提交审核失败');
+                }
+            })
+        }
+    }
+</script>

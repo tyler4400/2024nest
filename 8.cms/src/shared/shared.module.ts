@@ -16,10 +16,12 @@ import { Article } from "./entities/article.entity";
 import { ArticleService } from "./services/article.service";
 import { Category } from "./entities/category.entity";
 import { CategoryService } from "./services/category.service";
+import { CosService } from './services/cos.service';
+import { NotificationService } from './services/notification.service';
 @Global()
 @Module({
-    providers: [IsUsernameUniqueConstraint, ConfigurationService, UtilityService, UserService, RoleService, AccessService, TagService, ArticleService, CategoryService],
-    exports: [IsUsernameUniqueConstraint, ConfigurationService, UtilityService, UserService, RoleService, AccessService, TagService, ArticleService, CategoryService],
+    providers: [IsUsernameUniqueConstraint, ConfigurationService, UtilityService, UserService, RoleService, AccessService, TagService, ArticleService, CategoryService, CosService, NotificationService],
+    exports: [IsUsernameUniqueConstraint, ConfigurationService, UtilityService, UserService, RoleService, AccessService, TagService, ArticleService, CategoryService,CosService],
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
         TypeOrmModule.forRootAsync({
