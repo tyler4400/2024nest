@@ -14,12 +14,12 @@ export class CreateArticleDto {
     @ApiProperty({ description: '内容', example: '文章内容' })
     content: string;
 
-    @Transform(({value})=>Array.isArray(value)?value.map(Number):[Number(value)])
+    @Transform(({value})=>Array.isArray(value)?value.map(Number):value?[Number(value)]:[])
     @IsInt({each:true})
     @ApiProperty({ description: '分类ID数组', example: '[1,2]' })
     categoryIds: number[];
 
-    @Transform(({value})=>Array.isArray(value)?value.map(Number):[Number(value)])
+    @Transform(({value})=>Array.isArray(value)?value.map(Number):value?[Number(value)]:[])
     @IsInt({each:true})
     @ApiProperty({ description: '标签ID数组', example: '[3,4]' })
     tagIds: number[];

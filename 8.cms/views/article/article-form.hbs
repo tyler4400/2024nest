@@ -1,40 +1,93 @@
 <h1>{{#if article.id}}编辑文章{{else}}添加文章{{/if}}</h1>
-<form
-    action="/admin/articles{{#if article.id}}/{{article.id}}{{/if}}"
-    method="POST">
+<form action="/admin/articles{{#if article.id}}/{{article.id}}{{/if}}" method="POST" id="articleForm">
     {{#if article.id}}<input type="hidden" name="_method" value="PUT">{{/if}}
-        <div class="mb-3">
-            <label for="name" class="form-label">标题</label>
-            <input type="text" class="form-control" id="title" name="title" value="{{article.title}}">
+    <div class="mb-3">
+        <label for="name" class="form-label">标题</label>
+        <input type="text" class="form-control" id="title" name="title" value="{{article.title}}">
+    </div>
+    <div class="mb-3">
+        <label for="name" class="form-label">内容</label>
+        <div id="editor">
+            {{article.content}}
         </div>
-                <div class="mb-3">
-            <label for="name" class="form-label">内容</label>
-            <textarea class="form-control" id="content" name="content" rows="10">{{article.content}}</textarea>
-        </div>
-        <div class="mb-3">
-            <label for="name" class="form-label">分类</label>
-            <div id="categoryTree" class="border rounded p-3"></div>
-        </div>
-        <div class="mb-3">
-            <label for="name" class="form-label">标签</label>
-           <div class="d-flex flex-wrap">
+        <input type="hidden" name="content" id="contentInput" />
+    </div>
+    <div class="mb-3">
+        <label for="name" class="form-label">分类</label>
+        <div id="categoryTree" class="border rounded p-3"></div>
+    </div>
+    <div class="mb-3">
+        <label for="name" class="form-label">标签</label>
+        <div class="d-flex flex-wrap">
             {{#each tags}}
-                <div class="form-check me-3 mb-2">
-                    <input class="form-check-input"  {{#if (contains (mapToId ../article.tags) this.id)}}checked{{/if}} type="checkbox" name="tagIds" value="{{this.id}}" >
-                    <label class="form-check-label">{{this.name}}</label>
-                </div>
+            <div class="form-check me-3 mb-2">
+                <input class="form-check-input" {{#if (contains (mapToId ../article.tags) this.id)}}checked{{/if}}
+                    type="checkbox" name="tagIds" value="{{this.id}}">
+                <label class="form-check-label">{{this.name}}</label>
+            </div>
             {{/each}}
-           </div>
         </div>
-        <div class="mb-3">
-            <label for="status" class="form-label">状态</label>
-            <select class="form-control" id="status" name="status">
-                <option value="1" {{#if article.status}}selected{{/if}}>激活</option>
-                <option value="0" {{#unless article.status}}selected{{/unless}}>未激活</option>
-            </select>
-        </div>
-        <button type="submit" class="btn btn-primary">保存</button>
+    </div>
+    <div class="mb-3">
+        <label for="status" class="form-label">状态</label>
+        <select class="form-control" id="status" name="status">
+            <option value="1" {{#if article.status}}selected{{/if}}>激活</option>
+            <option value="0" {{#unless article.status}}selected{{/unless}}>未激活</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">保存</button>
 </form>
+<script type="importmap">
+    {
+        "imports": {
+            "ckeditor5": "/js/ckeditor5.js"
+        }
+    }
+</script>
+<script type="module">
+    import {
+        ClassicEditor,
+        Essentials,
+        Bold,
+        Italic,
+        Font,
+        Paragraph,
+        Image,
+        ImageToolbar,
+        ImageUpload,
+        ImageResize,
+        ImageStyle,
+        SimpleUploadAdapter 
+    } from 'ckeditor5';
+    //filerepository-no-upload-adapter 
+    ClassicEditor
+        .create(document.querySelector('#editor'), {
+            plugins: [Essentials, Bold, Italic, Font, Paragraph, Image,
+            ImageToolbar,ImageResize,ImageStyle,ImageUpload,SimpleUploadAdapter ],
+            image:{
+                toolbar:['imageTextAlternative','imageStyle:side','resizeImage:50','resizeImage:75','resizeImage:original']
+            },
+            toolbar: {
+                items: [
+                    'undo', 'redo', '|', 'bold', 'italic', '|',
+                    'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', '|', 'insertImage'
+                ]
+            },
+            simpleUpload:{
+                uploadUrl:'/admin/upload'
+            }
+        }) 
+        .then(editor => {
+            const form = document.getElementById('articleForm');
+            const contentInput = document.getElementById('contentInput');
+            form.addEventListener('submit', () => {
+                //当表单提交的时候，获取富文本编辑器最新的值并赋给contentInput隐藏域提交表单 
+                contentInput.value = editor.getData();
+            });
+        }).catch(error => console.log(error))
+</script>
+
+
 <script>
     const categoryTree = {{{ json categoryTree }}};
     const selectedCategoryIds = {{{ mapToId article.categories }}};//当前的文章对应的分类的ID数组

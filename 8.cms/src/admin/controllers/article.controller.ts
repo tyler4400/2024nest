@@ -44,9 +44,11 @@ export class ArticleController {
     @Get(':id/edit')
     @Render('article/article-form')
     async editForm(@Param('id', ParseIntPipe) id: number) {
-        const article = await this.articleService.findOne({ where: { id } });
+        const article = await this.articleService.findOne({ where: { id } ,relations:['categories','tags']});
         if (!article) throw new HttpException('Article not Found', 404);
-        return { article };
+        const categoryTree = await this.categoryService.findAll();
+        const tags = await this.tagService.findAll();
+        return { article,categoryTree,tags };
     }
 
     @Put(':id')
@@ -68,7 +70,7 @@ export class ArticleController {
     @Get(':id')
     @Render('article/article-detail')
     async findOne(@Param('id', ParseIntPipe) id: number) {
-        const article = await this.articleService.findOne({ where: { id } });
+        const article = await this.articleService.findOne({ where: { id },relations:['categories','tags'] });
         if (!article) throw new HttpException('Article not Found', 404);
         return { article };
     }

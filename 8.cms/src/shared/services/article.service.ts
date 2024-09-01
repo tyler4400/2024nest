@@ -1,9 +1,9 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Article } from "../entities/article.entity";
-import { Repository, Like,In } from 'typeorm';
+import { Repository, Like,In ,UpdateResult} from 'typeorm';
 import { MySQLBaseService } from "./mysql-base.service";
-import { CreateArticleDto } from "../dto/article.dto";
+import { CreateArticleDto, UpdateArticleDto } from "../dto/article.dto";
 import { Category } from "../entities/category.entity";
 import { Tag } from "../entities/tag.entity";
 
@@ -41,8 +41,26 @@ export class ArticleService extends MySQLBaseService<Article> {
   async create(createArticleDto:CreateArticleDto){
     const {categoryIds,tagIds,...articleDto} = createArticleDto;
     const article = this.repository.create(articleDto);
-    article.categories = await this.categoryRepository.findBy({id:In(categoryIds)})
-    article.tags = await this.tagRepository.findBy({id:In(tagIds)})
+    if(categoryIds){
+      article.categories = await this.categoryRepository.findBy({id:In(categoryIds)})
+    }
+    if(tagIds){
+      article.tags = await this.tagRepository.findBy({id:In(tagIds)})
+    }
     return await this.repository.save(article);
+  }
+  async update(id:number,updateArticleDto:UpdateArticleDto){
+    const {categoryIds,tagIds,...articleDto} = updateArticleDto;
+    const article = await this.repository.findOne({where:{id}, relations:['categories','tags']});
+    if (!article) throw new NotFoundException('Article not Found');
+    Object.assign(article,articleDto);
+    if(categoryIds){
+      article.categories = await this.categoryRepository.findBy({id:In(categoryIds)})
+    }
+    if(tagIds){
+      article.tags = await this.tagRepository.findBy({id:In(tagIds)})
+    }
+    await this.repository.save(article);
+    return UpdateResult.from({affected:1,records:[],raw:[]});
   }
 }
