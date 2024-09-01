@@ -5,3 +5,5 @@ export * from './dec';
 export * from './multiply';
 export * from './json';
 export * from './def';
+export * from './contains';
+export * from './mapToId';

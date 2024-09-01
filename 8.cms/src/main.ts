@@ -8,22 +8,11 @@ import {engine} from 'express-handlebars';
 //import { ValidationPipe } from '@nestjs/common';
 import {DocumentBuilder, SwaggerModule} from '@nestjs/swagger';
 import { I18nValidationPipe,I18nValidationExceptionFilter } from 'nestjs-i18n';
-import {MyLogger} from './my-logger';
-import {ExtendedConsoleLogger} from './extended-console-logger';
 import { useContainer } from 'class-validator';
 import * as helpers from 'src/shared/helpers'
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule,{
-    //logger:false //禁用日志
-    //logger:['error','warn']//启用特定的日志记录级别 只在这种指定类型的级别的日志才会打印
-    //logger:console //自定义的实现
-    //logger:new MyLogger()
-    //logger:new ExtendedConsoleLogger()
-    //bufferLogs:true,
-  });//set  NO_COLOR=true
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   useContainer(app.select(AppModule),{fallbackOnErrors:true});
-  //console.log(app.get('LOGGER_CONFIG'))
-  //app.useLogger(app.get(MyLogger));
   //配置静态文件根目录
   app.useStaticAssets(join(__dirname,'..','public'));
   //配置模板文件的根目录

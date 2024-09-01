@@ -4,8 +4,27 @@
     method="POST">
     {{#if article.id}}<input type="hidden" name="_method" value="PUT">{{/if}}
         <div class="mb-3">
-            <label for="name" class="form-label">名称</label>
-            <input type="text" class="form-control" id="name" name="name" value="{{article.name}}">
+            <label for="name" class="form-label">标题</label>
+            <input type="text" class="form-control" id="title" name="title" value="{{article.title}}">
+        </div>
+                <div class="mb-3">
+            <label for="name" class="form-label">内容</label>
+            <textarea class="form-control" id="content" name="content" rows="10">{{article.content}}</textarea>
+        </div>
+        <div class="mb-3">
+            <label for="name" class="form-label">分类</label>
+            <div id="categoryTree" class="border rounded p-3"></div>
+        </div>
+        <div class="mb-3">
+            <label for="name" class="form-label">标签</label>
+           <div class="d-flex flex-wrap">
+            {{#each tags}}
+                <div class="form-check me-3 mb-2">
+                    <input class="form-check-input"  {{#if (contains (mapToId ../article.tags) this.id)}}checked{{/if}} type="checkbox" name="tagIds" value="{{this.id}}" >
+                    <label class="form-check-label">{{this.name}}</label>
+                </div>
+            {{/each}}
+           </div>
         </div>
         <div class="mb-3">
             <label for="status" class="form-label">状态</label>
@@ -16,3 +35,38 @@
         </div>
         <button type="submit" class="btn btn-primary">保存</button>
 </form>
+<script>
+    const categoryTree = {{{ json categoryTree }}};
+    const selectedCategoryIds = {{{ mapToId article.categories }}};//当前的文章对应的分类的ID数组
+    function renderTree(categories) {
+        let html = '<ul class="list-unstyled">';
+        categories.forEach(function (category) {
+            html += `
+            <li class="mb-2">
+                <div class="d-flex align-items-center">
+                    ${category.children?.length > 0 ? '<span class="toggle me-2 cursor-pointer"><i class="bi bi-folder-plus"></i></span>' : '<span class="me-4"></span>'}
+                    <label class="form-check-label">
+                        <input type="checkbox" class="form-check-input" name="categoryIds" value="${category.id}" ${selectedCategoryIds.includes(category.id) ? 'checked' : ''}>
+                        ${category.name}
+                    </label>
+                </div>
+                ${category.children?.length > 0 ? `<div class="children ms-4" >${renderTree(category.children)}</div>` : ''}
+            </li>`;
+        });
+        html += '</ul>';
+        return html;
+    }
+    $(function () {
+        $('#categoryTree').html(renderTree(categoryTree));
+        $('body').on('click', '.toggle', function () {
+            const childrenContainer = $(this).parent().siblings('.children');
+            if (childrenContainer.is(':visible')) {
+                childrenContainer.hide();
+                $(this).html('<i class="bi bi-folder-plus"></i>');
+            } else {
+                childrenContainer.show();
+                $(this).html('<i class="bi bi-folder-minus"></i>');
+            }
+        });
+    });
+</script>

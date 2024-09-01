@@ -11,7 +11,9 @@
 <table class="table">
   <thead>
     <tr>
-      <td>名称</td>
+      <td>标题</td>
+      <td>分类</td>
+      <td>标签</td>  
       <td>状态</td>
       <td>排序</td>
       <td>操作</td>
@@ -20,7 +22,17 @@
   <tbody>
     {{#each articles}}
       <tr>
-        <td>{{this.name}}</td>
+        <td>{{this.title}}</td>
+        <td>
+          {{#each this.categories}}
+            <span class="badge bg-secondary">{{this.name}}</span>
+          {{/each}}
+        </td>
+        <td>
+          {{#each this.tags}}
+            <span class="badge bg-info text-dark">{{this.name}}</span>
+          {{/each}}
+        </td>
         <td>
           <span class="status-toggle" data-id="{{this.id}}" data-status="{{this.status}}">
             {{#if this.status}}

@@ -1,5 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn 
+    ,ManyToMany,JoinTable
+} from 'typeorm';
+import { Category } from './category.entity';
+import { Tag } from './tag.entity';
 
 @Entity()
 export class Article {
@@ -8,8 +12,21 @@ export class Article {
     id: number;
 
     @Column({ length: 50 })
-    @ApiProperty({ description: '名称', example: 'name' })
-    name: string;
+    @ApiProperty({ description: '标题', example: '标题' })
+    title: string;
+
+
+    @Column('text')
+    @ApiProperty({ description: '内容', example: '文章内容' })
+    content: string;
+
+    @ManyToMany(()=>Category)
+    @JoinTable()
+    categories:Category[]
+
+    @ManyToMany(()=>Tag)
+    @JoinTable()
+    tags:Tag[]
 
     @Column({ default: 1 })
     @ApiProperty({ description: '生效状态', example: 1 })

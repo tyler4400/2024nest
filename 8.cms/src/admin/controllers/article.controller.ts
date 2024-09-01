@@ -4,12 +4,16 @@ import { ArticleService } from 'src/shared/services/article.service';
 import { AdminExceptionFilter } from '../filters/admin-exception-filter';
 import { Response } from 'express';
 import { ParseOptionalIntPipe } from 'src/shared/pipes/parse-optional-int.pipe';
+import { CategoryService } from 'src/shared/services/category.service';
+import { TagService } from 'src/shared/services/tag.service';
 
 @UseFilters(AdminExceptionFilter)
 @Controller('admin/articles')
 export class ArticleController {
     constructor(
-        private readonly articleService: ArticleService
+        private readonly articleService: ArticleService,
+        private readonly categoryService: CategoryService,
+        private readonly tagService: TagService
     ) { }
 
     @Get()
@@ -24,8 +28,10 @@ export class ArticleController {
 
     @Get('create')
     @Render('article/article-form')
-    createForm() {
-        return { article: {} }
+    async createForm() {
+        const categoryTree = await this.categoryService.findAll();
+        const tags = await this.tagService.findAll();
+        return { article: {tags:[],categories:[]},categoryTree,tags }
     }
 
     @Post()
