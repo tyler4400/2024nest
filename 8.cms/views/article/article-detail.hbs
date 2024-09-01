@@ -50,13 +50,15 @@
 </div>
 <a href="/admin/articles/{{article.id}}/edit" class="btn btn-warning btn-sm">修改</a>
 <a href="/admin/articles" class="btn btn-secondary btn-sm">返回列表</a>
+<a href="/admin/articles/{{article.id}}/export-word" class="btn btn-primary btn-sm">导出Word</a>
+
 {{#if (eq article.state 'draft')}}
 <button class="btn btn-warning btn-sm" onclick="submitForReview({{article.id}})">提交审核</button>
 {{/if}}
 {{#if (eq article.state 'pending')}}
 <button class="btn btn-warning btn-sm" onclick="approveArticle({{article.id}})">审核通过</button>
-<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal-{{article.id}}">审核不通过</button>
-<div class="modal fade" id="rejectModal-{{article.id}}" tabindex="-1">
+<button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal">审核不通过</button>
+<div class="modal fade" id="rejectModal">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -102,7 +104,7 @@
         }
     }
     function rejectArticle(id) {
-        const rejectionReason = $(`#rejectionReason-${id}`).val();
+        const rejectionReason = $(`#rejectionReason`).val();
         if (rejectionReason.trim() === '') {
             alert('请填写审核不通过的原因');
             return;

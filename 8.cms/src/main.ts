@@ -12,6 +12,7 @@ import { useContainer } from 'class-validator';
 import * as helpers from 'src/shared/helpers'
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  //作用就是可以让自定义校验器可以支持依赖注入
   useContainer(app.select(AppModule),{fallbackOnErrors:true});
   //配置静态文件根目录
   app.useStaticAssets(join(__dirname,'..','public'));

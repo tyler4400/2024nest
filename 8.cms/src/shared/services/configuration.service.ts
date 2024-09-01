@@ -39,4 +39,16 @@ export class ConfigurationService{
    get cosRegion():string {
     return this.configService.get<string>('COS_REGION');
    }
+   get smtpHost():string {
+    return this.configService.get<string>('SMTP_HOST');
+   }
+   get smtpPort():string {
+    return this.configService.get<string>('SMTP_PORT');
+   }
+   get smtpUser():string {
+    return this.configService.get<string>('SMTP_USER');
+   }
+   get smtpPass():string {
+    return this.configService.get<string>('SMTP_PASS');
+   }
 }

@@ -18,10 +18,14 @@ import { Category } from "./entities/category.entity";
 import { CategoryService } from "./services/category.service";
 import { CosService } from './services/cos.service';
 import { NotificationService } from './services/notification.service';
+import { MailService } from './services/mail.service';
+import { WordExportService } from './services/word-export.service';
+import {PptExportService} from './services/ppt-export.service';
+import { ExcelExportService } from './services/excel-export.service';
 @Global()
 @Module({
-    providers: [IsUsernameUniqueConstraint, ConfigurationService, UtilityService, UserService, RoleService, AccessService, TagService, ArticleService, CategoryService, CosService, NotificationService],
-    exports: [IsUsernameUniqueConstraint, ConfigurationService, UtilityService, UserService, RoleService, AccessService, TagService, ArticleService, CategoryService,CosService],
+    providers: [IsUsernameUniqueConstraint, ConfigurationService, UtilityService, UserService, RoleService, AccessService, TagService, ArticleService, CategoryService, CosService, NotificationService, MailService, WordExportService,PptExportService,ExcelExportService],
+    exports: [IsUsernameUniqueConstraint, ConfigurationService, UtilityService, UserService, RoleService, AccessService, TagService, ArticleService, CategoryService,CosService, NotificationService, MailService,WordExportService,PptExportService,ExcelExportService],
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
         TypeOrmModule.forRootAsync({

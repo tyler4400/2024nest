@@ -1,23 +1,26 @@
 <h1>
   文章列表
 </h1>
-<a href="/admin/articles/create" class="btn btn-success mb-3">添加文章</a>
+<a href="/admin/articles/create" class="btn btn-success btn-sm mb-3">添加文章</a>
+<a href="/admin/articles/export-ppt" class="btn btn-primary btn-sm mb-3">导出PPT</a>
+<a href="/admin/articles/export-excel" class="btn btn-primary btn-sm mb-3">后台导出Excel</a>
+<button id="frontExportExcelBtn" class="btn btn-primary btn-sm mb-3" onclick="exportExcel()">前台导出Excel</button>
 <form method="GET" action="/admin/articles" class="mb-3">
   <div class="input-group">
     <input type="text" name="keyword" class="form-control" placeholder="请输入搜索关键字" value="{{keyword}}">
     <button class="btn btn-outline-secondary">搜索</button>
   </div>
 </form>
-<table class="table">
+<table class="table" id="articleTable">
   <thead>
     <tr>
-      <td>标题</td>
-      <td>分类</td>
-      <td>标签</td>
-      <td>状态</td>
-      <td>审核状态</td>
-      <td>排序</td>
-      <td>操作</td>
+      <th>标题</th>
+      <th>分类</th>
+      <th>标签</th>
+      <th>状态</th>
+      <th>审核状态</th>
+      <th>排序</th>
+      <th>操作</th>
     </tr>
   </thead>
   <tbody>
@@ -214,7 +217,45 @@
       })
     }
   }
+  function exportExcel(){
+    //创建一个空符串，用于保存文件内容
+    let csvContent = '';
+    $('#articleTable thead tr').each(function(){
+      let rowContent = '';
+      let cells = $(this).find('th');
+      cells.each(function(index){
+        if(index <cells.length-1){
+          rowContent+=$(this).text().trim()+',';
+        }
+      });
+      csvContent+=rowContent.slice(0,-1)+'\n';//移除最后一个多余的逗号并添加换行符
+    })
+    $('#articleTable tbody tr').each(function(index){
+      let rowContent = '';
+      let cells = $(this).find('td');
+      cells.each(function(index){
+        if(index <cells.length-1){
+          console.log('$(this).text().trim()',$(this).text().trim().replace(/\n/g,'+').replace(/\s+/g,''));
+          rowContent+=$(this).text().trim().replace(/\n/g,'+').replace(/\s+/g,'')+',';
+        }
+      });
+      csvContent+=rowContent.slice(0,-1)+'\n';//移除最后一个多余的逗号并添加换行符
+    })
+    console.log(csvContent);
+    //创建一个blobk对象，包含了生成的csv内容，类型为text/csv
+    const blob = new Blob([csvContent],{type:'text/csv:charset=utf-8'});
+    //创建一个指向blob的URL地址
+    let url = URL.createObjectURL(blob);
+    let link = $('a').attr({href:url,download:'articles.csv'}).appendTo('body');
+    //模拟点击a元素触发下载
+    link[0].click();
+    //移除临时添加的a元素
+    link.remove();
+  }
   $(function () {
+    $('#frontExportExcelBtn').click(()=>{
+
+    });
     $('.sort-text').on('dblclick', function () {
       const $this = $(this);
       const id = $this.data('id');
