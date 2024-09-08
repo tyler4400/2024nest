@@ -5,6 +5,10 @@
         <label for="name" class="form-label">名称</label>
         <input type="text" class="form-control" id="name" name="name" value="{{access.name}}">
     </div>
+         <div class="mb-3">
+            <label for="code" class="form-label">编码</label>
+            <input type="text" class="form-control" id="code" name="code" value="{{access.code}}">
+        </div>
     <div class="mb-3">
         <label for="url" class="form-label">url</label>
         <input type="text" class="form-control" id="url" name="url" value="{{access.url}}">
@@ -18,7 +22,8 @@
         <select class="form-control" id="type" name="type">
             <option value="module" {{#if (eq access.type 'module' )}}selected{{/if}}>模块</option>
             <option value="menu" {{#if (eq access.type 'menu' )}}selected{{/if}}>菜单</option>
-            <option value="feature" {{#if (eq access.type 'feature' )}}selected{{/if}}>功能</option>
+            <option value="page" {{#if (eq access.type 'page' )}}selected{{/if}}>页面</option>
+            <option value="button" {{#if (eq access.type 'button' )}}selected{{/if}}>按钮</option>
         </select>
     </div>
     <div class="mb-3">

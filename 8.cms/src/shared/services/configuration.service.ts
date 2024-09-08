@@ -71,4 +71,22 @@ export class ConfigurationService{
         uri:`mongodb://${this.mongodbHost}:${this.mongodbPort}/${this.mongodbDB}`
     }
    }
+   get ipApiUrl ():string{
+    return this.configService.get<string>('IP_API_URL');
+   }
+   get weatherApiKey ():string{
+    return this.configService.get<string>('WEATHER_API_KEY');
+   }
+   get weatherApiUrl ():string{
+    return this.configService.get<string>('WEATHER_API_URL');
+   }
+   get redisHost ():string{
+    return this.configService.get<string>('REDIS_HOST');
+   }
+   get redisPort ():number{
+    return this.configService.get<number>('REDIS_PORT');
+   }
+   get redisPassword ():string{
+    return this.configService.get<string>('REDIS_PASSWORD');
+   }
 }

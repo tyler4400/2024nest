@@ -12,7 +12,7 @@ export class UserController {
     constructor(
         private readonly userService: UserService,
         private readonly utilityService: UtilityService,
-        private readonly roleService:RoleService
+        private readonly roleService:RoleService,
     ) { }
 
     @Get()

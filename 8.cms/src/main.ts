@@ -5,11 +5,13 @@ import * as session from 'express-session';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import {join} from 'path';
 import {engine} from 'express-handlebars';
-//import { ValidationPipe } from '@nestjs/common';
 import {DocumentBuilder, SwaggerModule} from '@nestjs/swagger';
 import { I18nValidationPipe,I18nValidationExceptionFilter } from 'nestjs-i18n';
 import { useContainer } from 'class-validator';
 import * as helpers from 'src/shared/helpers'
+import RedisStore from 'connect-redis';
+import { RedisService } from './shared/services/redis.service';
+
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   //作用就是可以让自定义校验器可以支持依赖注入
@@ -31,7 +33,10 @@ async function bootstrap() {
   //设置渲染模板的引擎为hbs
   app.set('view engine','hbs');
   app.use(cookieParser());
+  const redisService = app.get(RedisService);
+  const redisClient = redisService.getClient();
   app.use(session({
+    store:new RedisStore({client:redisClient}),
     secret: 'secret-key',
     resave: true,
     saveUninitialized: true,

@@ -38,7 +38,9 @@
         <td>
           <a href="/admin/tags/{{this.id}}" class="btn btn-primary btn-sm">查看</a>
           <a href="/admin/tags/{{this.id}}/edit" class="btn btn-warning btn-sm">修改</a>
-          <a class="btn btn-danger btn-sm" onclick="deleteTag({{this.id}})">删除</a>
+          {{#if (contains ../userAccessCodes 'deleteTagButton')}}
+             <a class="btn btn-danger btn-sm" onclick="deleteTag({{this.id}})">删除</a>
+          {{/if}}
         </td>
       </tr>
       {{/each}}

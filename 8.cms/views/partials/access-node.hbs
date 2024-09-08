@@ -1,4 +1,5 @@
 <tr data-id="{{id}}" data-parent="{{parent.id}}">
+       <td>{{code}}</td>
       <td style="padding-left: {{multiply depth 20}}px;">
         <span class="toggle cursor-pointer" data-id="{{id}}">
             {{#if children.length}}
@@ -12,8 +13,10 @@
         <span class="badge bg-primary">模块</span>
         {{else if (eq type 'menu')}}
         <span class="badge bg-success">菜单</span>
-        {{else if (eq type 'feature')}}
-          <span class="badge bg-info">功能</span>
+        {{else if (eq type 'page')}}
+        <span class="badge bg-info">页面</span>
+        {{else if (eq type 'button')}}
+        <span class="badge bg-info">按钮</span>
         {{/if}}  
       </td>
       <td>{{url}}</td>

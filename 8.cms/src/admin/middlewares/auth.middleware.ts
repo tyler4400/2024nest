@@ -12,7 +12,7 @@ export class AuthMiddleware implements NestMiddleware{
         //如果登录成功之后，会把登录的对象放在会话对象中
         const user = req.session.user;
         if(!user){//如果没有user，说明此用户尚未登录，则去登录页进行登录
-            return res.redirect('/admin/logout');
+            return res.redirect('/admin/login');
         }
         //locals的属性可以用来渲染模板
         res.locals.user= user;
@@ -22,7 +22,10 @@ export class AuthMiddleware implements NestMiddleware{
         //获取当前用户有权限的资源
         const userAccessIds =  this.getUserAccessIds(user);
         const menuTree = user.is_super?accessTree:this.getUserMenuTree(accessTree,userAccessIds);
-       
+        const userAccessCodes = this.getUserAccessCodes(user);
+        console.log('userAccessCodes',userAccessCodes)
+        //把此用户有权限的路径放在了userAccessUrls
+        res.locals.userAccessCodes= userAccessCodes;
         //获取菜单树并且放在模板对象的上下文中，可以在渲染模板的时候使用
         res.locals.menuTree = menuTree;
         if(user.is_super || req.originalUrl === '/admin/welcome'){//如果是超级管理员
@@ -39,8 +42,10 @@ export class AuthMiddleware implements NestMiddleware{
     private hasPermission(user,url:string){
         //获取此用户所有权限的url地址
         const userAccessUrls = user.roles.flatMap(role=>role.accesses.map(access=>access.url));
-        console.log(userAccessUrls,url)
         return userAccessUrls.some(urlPattern=>match(urlPattern)(url));
+    }
+    private getUserAccessCodes(user):string[]{
+        return  user.roles.flatMap(role=>role.accesses.map(access=>access.code)).filter(Boolean);
     }
     private getUserAccessIds(user):number[]{
         //{roles:[{name:'role1',accesses:[{id:1},{id:2}]},{name:'role2',accesses:[{id:3},{id:4}]}]}
@@ -52,7 +57,7 @@ export class AuthMiddleware implements NestMiddleware{
     private getUserMenuTree(accessTree:Access[],userAccessIds:number[]){
         return accessTree.filter(access=>{
             //如果此资源是一个功能，或者此用户没有此资源的权限，那就返回false进行过滤
-            if(access.type === AccessType.FEATURE || !userAccessIds.includes(access.id)){
+            if(access.type === AccessType.PAGE||access.type === AccessType.BUTTON || !userAccessIds.includes(access.id)){
                 return false;
             }
             if(access.children){

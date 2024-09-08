@@ -5,12 +5,17 @@ import { IdValidators, StatusValidators, SortValidators } from '../decorators/dt
 export enum AccessType{
     MODULE='module',//模块 父菜单
     MENU='menu',//  菜单 子菜单
-    FEATURE='feature'//功能 按钮 操作
+    PAGE='page',//页面或者说路径
+    BUTTON='button'//按钮
 }
 export class CreateAccessDto {
     @IsString()
     @ApiProperty({ description: '名称', example: 'name' })
     name: string;
+    
+    @IsString()
+    @ApiProperty({ description: '编码', example: 'code' })
+    code: string;
 
     @ApiProperty({ description: '类型', example: '菜单' })
     type: AccessType;

@@ -9,9 +9,13 @@ export class Access {
     @ApiProperty({ description: 'ID', example: 1 })
     id: number;
 
-    @Column({ length: 50, unique: true })
+    @Column({ length: 50 })
     @ApiProperty({ description: '名称', example: 'name' })
     name: string;
+
+    @Column({ length: 50 })
+    @ApiProperty({ description: '权限编码', example: 'deleteCode' })
+    code: string;
 
     @Column({type:'enum',enum: AccessType})
     @ApiProperty({ description: '类型', example: '菜单' })
