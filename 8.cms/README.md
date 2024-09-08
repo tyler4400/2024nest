@@ -39,3 +39,14 @@ npm install cookie-parser express-session @nestjs/platform-express
 nest g generateList tag 标签 --collection=D:/aproject/2024nest/cms-generator
 nest g generateList article 文章 --collection=D:/aproject/2024nest/cms-generator
 nest g generateTree category 分类 --collection=D:/aproject/2024nest/cms-generator
+
+
+从性能上来说
+redis>mongodb>mysql
+几十万>几万>几千 
+从可靠性来说
+mysql>mongodb>redis
+从灵活性上来
+redis>mongodb>mysql
+
+

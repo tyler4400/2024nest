@@ -1,0 +1,16 @@
+<form action="/admin/settings" method="POST">
+    <input type="hidden" name="id" value="{{settings.id}}">
+    <div class="mb-3">
+        <label for="siteName" class="form-label">网站名称</label>
+        <input type="text" class="form-control" id="siteName" name="siteName" value="{{settings.siteName}}">
+    </div>
+    <div class="mb-3">
+        <label for="siteDescription" class="form-label">网站描述</label>
+        <input type="text" class="form-control" id="siteDescription" name="siteDescription" value="{{settings.siteDescription}}">
+    </div>
+    <div class="mb-3">
+        <label for="contactEmail" class="form-label">联系人邮件</label>
+        <input type="text" class="form-control" id="contactEmail" name="contactEmail" value="{{settings.contactEmail}}">
+    </div>
+    <button type="submit" class="btn btn-primary">保存设置</button>
+</form>

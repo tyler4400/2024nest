@@ -7,3 +7,4 @@ export * from './json';
 export * from './def';
 export * from './contains';
 export * from './mapToId';
+export * from './fromNow';

@@ -21,6 +21,29 @@ export abstract class MySQLBaseService<T> {
   async delete(id: number) {
     return this.repository.delete(id);
   }
+  async count(){
+    return this.repository.count();
+  }
+  async findLatest(take:number){
+    const order:any = {
+      id:'DESC'
+    }
+    return this.repository.find({
+      order,
+      take
+    });
+  }
+  async getTrend(tableName:string){
+    const result = await this.repository.query(`
+       SELECT DATE_FORMAT(createdAt,'%Y-%m-%d') as date,COUNT(*) as count
+      FROM ${tableName}
+      GROUP BY date
+      ORDER BY date ASC
+    `)
+   const dates = result.map(row=>row.date);
+   const counts = result.map(row=>row.count); 
+   return {dates,counts}
+  }
 }
 /**
  * repository.create 并不是保存用户数据的意思，而是创建一个新的实体

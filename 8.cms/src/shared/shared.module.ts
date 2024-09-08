@@ -22,12 +22,32 @@ import { MailService } from './services/mail.service';
 import { WordExportService } from './services/word-export.service';
 import {PptExportService} from './services/ppt-export.service';
 import { ExcelExportService } from './services/excel-export.service';
+import { SettingService } from './services/setting.service';
+import { MongooseModule } from '@nestjs/mongoose';
+import {Setting,SettingSchema} from './schemas/setting.schema';
+import { DashboardService } from './services/dashboard.service';
 @Global()
 @Module({
-    providers: [IsUsernameUniqueConstraint, ConfigurationService, UtilityService, UserService, RoleService, AccessService, TagService, ArticleService, CategoryService, CosService, NotificationService, MailService, WordExportService,PptExportService,ExcelExportService],
-    exports: [IsUsernameUniqueConstraint, ConfigurationService, UtilityService, UserService, RoleService, AccessService, TagService, ArticleService, CategoryService,CosService, NotificationService, MailService,WordExportService,PptExportService,ExcelExportService],
+    providers: [
+        IsUsernameUniqueConstraint, ConfigurationService, UtilityService, 
+        UserService, RoleService, AccessService, TagService, ArticleService, 
+        CategoryService, CosService, NotificationService, MailService, 
+        WordExportService,PptExportService,ExcelExportService, SettingService, DashboardService],
+    exports: [IsUsernameUniqueConstraint, ConfigurationService, UtilityService, 
+        UserService, RoleService, AccessService, TagService, ArticleService, 
+        CategoryService,CosService, NotificationService, MailService,
+        WordExportService,PptExportService,ExcelExportService,SettingService,DashboardService],
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
+        MongooseModule.forRootAsync({
+            inject:[ConfigurationService],
+            useFactory:(configurationService:ConfigurationService)=>({
+                uri:configurationService.mongodbConfig.uri
+            })
+        }),
+        MongooseModule.forFeature([
+            {name:Setting.name,schema:SettingSchema}//注册操作数据库模型的名称和对应的schema
+        ]),
         TypeOrmModule.forRootAsync({
             inject: [ConfigurationService],
             useFactory: (configurationService: ConfigurationService) => ({

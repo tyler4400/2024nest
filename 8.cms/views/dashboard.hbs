@@ -1,1 +1,263 @@
-<h1>{{title}}</h1>
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <span>快捷操作</span>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-2">
+                        <a href="/admin/articles" class="btn btn-outline-primary btn-clock">
+                            <i class="bi bi-file-text"></i>
+                            文章管理
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="/admin/categories" class="btn btn-outline-primary btn-clock">
+                            <i class="bi bi-folder-plus"></i>
+                            新增分类
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="/admin/tags" class="btn btn-outline-primary btn-clock">
+                            <i class="bi bi-tag"></i>
+                            新增标签
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="/admin/users" class="btn btn-outline-primary btn-clock">
+                            <i class="bi bi-person-plus"></i>
+                            添加用户
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="/admin/accesses" class="btn btn-outline-primary btn-clock">
+                            <i class="bi bi-folder-plus"></i>
+                            添加资源
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="/admin/settings" class="btn btn-outline-primary btn-clock">
+                            <i class="bi bi-gear"></i>
+                            系统设置
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <span>系统概览</span>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="card text-black">
+                            <div class="card-body">
+                                <h5>用户总数</h5>
+                                <p class="card-text">{{userCount}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-black">
+                            <div class="card-body">
+                                <h5>文章总数</h5>
+                                <p class="card-text">{{articleCount}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-black">
+                            <div class="card-body">
+                                <h5>分类总数</h5>
+                                <p class="card-text">{{categoryCount}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-black">
+                            <div class="card-body">
+                                <h5>标签总数</h5>
+                                <p class="card-text">{{tagCount}}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <span>最新数据</span>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="card text-black">
+                            <div class="card-body">
+                                <h5>最新文章</h5>
+                                <ul class="list-group list-group-flush">
+                                    {{#each latestArticles}}
+                                    <li class="list-group-item">
+                                        <a href="/admin/articles/{{id}}">{{title}}</a>
+                                        <span class="float-right">{{fromNow createdAt}}</span>
+                                    </li>
+                                    {{/each}}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="card text-black">
+                            <div class="card-body">
+                                <h5>最新用户</h5>
+                                <ul class="list-group list-group-flush">
+                                    {{#each latestUsers}}
+                                    <li class="list-group-item">
+                                        <a href="/admin/users/{{id}}">{{username}}</a>
+                                        <span class="float-right">{{fromNow createdAt}}</span>
+                                    </li>
+                                    {{/each}}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card text-black">
+                            <div class="card-body">
+                                <h5>最新分类</h5>
+                                <ul class="list-group list-group-flush">
+                                    {{#each latestCategories}}
+                                    <li class="list-group-item">
+                                        <a href="/admin/categories/{{id}}">{{name}}</a>
+                                        <span class="float-right">{{fromNow createdAt}}</span>
+                                    </li>
+                                    {{/each}}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-black">
+                            <div class="card-body">
+                                <h5>最新标签</h5>
+                                <ul class="list-group list-group-flush">
+                                    {{#each latestTags}}
+                                    <li class="list-group-item">
+                                        <a href="/admin/tags/{{id}}">{{name}}</a>
+                                        <span class="float-right">{{fromNow createdAt}}</span>
+                                    </li>
+                                    {{/each}}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <span>内容报表</span>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-6">
+                      <div id="usersThreadChart" style="width: 100%;height:400px"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <div id="articlesThreadChart" style="width: 100%;height:400px"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <div id="categoriesThreadChart" style="width: 100%;height:400px"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <div id="tagsThreadChart" style="width: 100%;height:400px"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+const usersThreadChart = echarts.init(document.getElementById('usersThreadChart'));
+const usersThreadOptions = {
+    title:{text:'用户增长趋势'},
+    xAxis:{
+        type:'category',
+        data:{{{json usersTrend.dates}}}
+    },
+    yAxis:{
+        type:'value',//Y轴的类型为数字类型
+    },
+    series:[
+    {
+        data:{{{json usersTrend.counts}}},
+        type:'line'//数据系列的图表类型为折线图
+    }]
+}
+usersThreadChart.setOption(usersThreadOptions);
+const articlesThreadChart = echarts.init(document.getElementById('articlesThreadChart'));
+const articlesThreadOptions = {
+    title:{text:'文章增长趋势'},
+    xAxis:{
+        type:'category',
+        data:{{{json articlesTrend.dates}}}
+    },
+    yAxis:{
+        type:'value',//Y轴的类型为数字类型
+    },
+    series:[
+    {
+        data:{{{json articlesTrend.counts}}},
+        type:'bar'//数据系列的图表类型为柱状图
+    }]
+}
+articlesThreadChart.setOption(articlesThreadOptions);
+const categoriesThreadChart = echarts.init(document.getElementById('categoriesThreadChart'));
+const categoriesThreadOptions = {
+    title:{text:'文章分类增长趋势'},
+    xAxis:{
+        type:'category',
+        data:{{{json categoriesTrend.dates}}}
+    },
+    yAxis:{
+        type:'value',//Y轴的类型为数字类型
+    },
+    series:[
+    {
+        data:{{{json categoriesTrend.counts}}},
+        type:'bar'//数据系列的图表类型为折线图
+    }]
+}
+categoriesThreadChart.setOption(categoriesThreadOptions);
+const tagsThreadChart = echarts.init(document.getElementById('tagsThreadChart'));
+const tagsThreadOptions = {
+    title:{text:'标签增长趋势'},
+    xAxis:{
+        type:'category',
+        data:{{{json tagsTrend.dates}}}
+    },
+    yAxis:{
+        type:'value',//Y轴的类型为数字类型
+    },
+    series:[
+    {
+        data:{{{json tagsTrend.counts}}},
+        type:'bar'//数据系列的图表类型为折线图
+    }]
+}
+tagsThreadChart.setOption(tagsThreadOptions);
+</script>
