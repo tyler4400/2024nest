@@ -24,6 +24,7 @@
     "@nestjs/config": "^3.2.3",
     "@nestjs/core": "^10.0.0",
     "@nestjs/event-emitter": "^2.0.4",
+    "@nestjs/jwt": "^10.2.0",
     "@nestjs/mongoose": "^10.0.10",
     "@nestjs/platform-express": "^10.3.10",
     "@nestjs/serve-static": "^4.0.2",
@@ -49,12 +50,14 @@
     "nestjs-i18n": "^10.4.5",
     "nodemailer": "^6.9.14",
     "pptxgenjs": "^3.12.0",
+    "qrcode": "^1.5.4",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "sharp": "^0.33.5",
     "svg-captcha": "^1.4.0",
     "swagger-ui-express": "^5.0.1",
     "systeminformation": "^5.23.5",
+    "tencentcloud-sdk-nodejs": "^4.0.932",
     "winston": "^3.14.2"
   },
   "devDependencies": {
