@@ -21,13 +21,13 @@ export class SystemService {
                 cores:cpu.cpus.length,//CPU的核心数
                 userLoad:cpu.currentLoadUser.toFixed(2),//用户进程占用的CPU负载百分比
                 systemLoad:cpu.currentLoadSystem.toFixed(2),//系统进程占用的CPU百分比
-                idle:cpu.currentLoadIdle.toFixed(2)+'%'//空闲的CPU负载百分比
+                idle:cpu.currentLoadIdle.toFixed(2)//空闲的CPU负载百分比
             },
             memory:{
                 total:toGB(memory.total),//总内存
                 used:toGB(memory.used),//已使用内存
                 free:toGB(memory.free),//空闲内存
-                usage:((memory.used/memory.total)*100).toFixed(2)+'%',//内存使用百分比
+                usage:((memory.used/memory.total)*100).toFixed(2),//内存使用百分比
             },
             disks:disk.map(d=>({
                 mount:d.mount,//挂载点 也就是盘符
@@ -36,7 +36,7 @@ export class SystemService {
                 size:toGB(d.size),//磁盘的总大小
                 used:toGB(d.used),//已经使用的磁盘
                 available:toGB(d.available),//可用的
-                usage:d.use.toFixed(2)+'%'//使用效率
+                usage:d.use.toFixed(2)//使用效率
             })),
             server:{
                 hostname:osInfo.hostname,//主机名

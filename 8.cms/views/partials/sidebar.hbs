@@ -1,54 +1,23 @@
 <div class="col-md-3 col-lg-2 p-0">
-   <div class="accordion" id="sidebarMenu">
+    <div class="accordion" id="sidebarMenu">
+        {{#each menuTree}}
         <div class="accordion-item">
-            <h2 class="accordion-header" id="heading">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1">权限管理</button>
+            <h2 class="accordion-header" id="heading-{{id}}">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapse-{{id}}">{{name}}</button>
             </h2>
-            <div class="accordion-collapse collapse" id="collapse1">
+            <div class="accordion-collapse collapse" id="collapse-{{id}}">
                 <div class="accordion-body">
                     <ul class="list-group">
+                        {{#each children}}
                         <li class="list-group-item">
-                            <a href="/admin/users">用户管理</a>
+                            <a href="{{url}}">{{name}}</a>
                         </li>
-                        <li class="list-group-item">
-                            <a href="/admin/roles">角色管理</a>
-                        </li>
-                        <li class="list-group-item">
-                            <a href="/admin/accesses">资源管理</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-             <h2 class="accordion-header" id="heading">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1">内容管理</button>
-            </h2>
-            <div class="accordion-collapse collapse" id="collapse1">
-                <div class="accordion-body">
-                    <ul class="list-group">
-                        <li class="list-group-item">
-                            <a href="/admin/tags">标签管理</a>
-                        </li>
-                        <li class="list-group-item">
-                            <a href="/admin/categories">分类管理</a>
-                        </li>
-                        <li class="list-group-item">
-                            <a href="/admin/articles">文章管理</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <h2 class="accordion-header" id="heading">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1">设置</button>
-            </h2>
-            <div class="accordion-collapse collapse" id="collapse1">
-                <div class="accordion-body">
-                    <ul class="list-group">
-                        <li class="list-group-item">
-                            <a href="/admin/settings">网站设置</a>
-                        </li>
+                        {{/each}}
                     </ul>
                 </div>
             </div>
         </div>
-   </div>
+        {{/each}}
+    </div>
 </div>

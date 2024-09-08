@@ -4,9 +4,9 @@
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">欢迎, admin</a>
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">欢迎, {{user.username}}</a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item">退出登录</a></li>
+                        <li><a class="dropdown-item" href="/admin/logout">退出登录</a></li>
                     </ul>
                 </li>
             </ul>

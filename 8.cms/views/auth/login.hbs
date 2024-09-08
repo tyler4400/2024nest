@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/style/bootstrap.min.css" rel="stylesheet">
+    <link href="/style/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/style/ckeditor5.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/43.0.0/ckeditor5.css" />
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/ckeditor5.js"></script>
+    <script src="/js/echarts.min.js"></script>
+    <script src="/js/handlebars.min.js"></script>
+    <title>后台登录</title>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">管理员登录</h1>
+        {{#if message}}
+        <div class="alert alert-danger">{{message}}</div>
+        {{/if}}
+        <form action="/admin/login" method="POST">
+            <input type="hidden" name="id" value="{{settings.id}}">
+            <div class="mb-3">
+                <label for="username" class="form-label">用户名</label>
+                <input type="text" class="form-control" id="username" name="username">
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">密码</label>
+                <input type="text" class="form-control" id="password" name="password">
+            </div>
+            <div class="mb-3">
+                <label for="captcha" class="form-label">验证码</label>
+                <div class="d-flex">
+                    <input type="text" class="form-control" id="captcha" name="captcha">
+                    <img id="captcha-img" src="/admin/captcha" alt="captcha" onclick="reloadCaptcha()"
+                        style="cursor:pointer;">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">登录</button>
+        </form>
+    </div>
+    <script>
+        function reloadCaptcha() {
+            $('#captcha-img').attr('src', `/admin/captcha?${Date.now()}`)
+        }
+    </script>
+</body>
+
+</html>
