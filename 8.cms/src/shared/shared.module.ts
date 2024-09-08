@@ -26,17 +26,21 @@ import { SettingService } from './services/setting.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import {Setting,SettingSchema} from './schemas/setting.schema';
 import { DashboardService } from './services/dashboard.service';
+import { WeatherService } from './services/weather.service';
+import { SystemService } from './services/system.service';
 @Global()
 @Module({
     providers: [
         IsUsernameUniqueConstraint, ConfigurationService, UtilityService, 
         UserService, RoleService, AccessService, TagService, ArticleService, 
         CategoryService, CosService, NotificationService, MailService, 
-        WordExportService,PptExportService,ExcelExportService, SettingService, DashboardService],
+        WordExportService,PptExportService,ExcelExportService, SettingService, 
+        DashboardService, WeatherService, SystemService],
     exports: [IsUsernameUniqueConstraint, ConfigurationService, UtilityService, 
         UserService, RoleService, AccessService, TagService, ArticleService, 
         CategoryService,CosService, NotificationService, MailService,
-        WordExportService,PptExportService,ExcelExportService,SettingService,DashboardService],
+        WordExportService,PptExportService,ExcelExportService,SettingService,DashboardService,
+        WeatherService,SystemService],
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
         MongooseModule.forRootAsync({

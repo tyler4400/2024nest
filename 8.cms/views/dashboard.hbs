@@ -3,6 +3,7 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between">
                 <span>快捷操作</span>
+                <span id="weather-info">正在获取天气信息...</span>
             </div>
             <div class="card-body">
                 <div class="row text-center">
@@ -130,7 +131,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="col-md-3">
                         <div class="card text-black">
                             <div class="card-body">
@@ -175,7 +176,7 @@
             <div class="card-body">
                 <div class="row text-center">
                     <div class="col-md-6">
-                      <div id="usersThreadChart" style="width: 100%;height:400px"></div>
+                        <div id="usersThreadChart" style="width: 100%;height:400px"></div>
                     </div>
                     <div class="col-md-6">
                         <div id="articlesThreadChart" style="width: 100%;height:400px"></div>
@@ -191,73 +192,170 @@
         </div>
     </div>
 </div>
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">系统实时状态</div>
+            <div class="card-body" id="systemInfo">
+                <div>正在读取系统状态数据</div>
+            </div>
+        </div>
+    </div>
+</div>
 <script type="text/javascript">
-const usersThreadChart = echarts.init(document.getElementById('usersThreadChart'));
-const usersThreadOptions = {
-    title:{text:'用户增长趋势'},
-    xAxis:{
-        type:'category',
-        data:{{{json usersTrend.dates}}}
+    const usersThreadChart = echarts.init(document.getElementById('usersThreadChart'));
+    const usersThreadOptions = {
+        title: { text: '用户增长趋势' },
+        xAxis: {
+            type: 'category',
+            data: {{{ json usersTrend.dates }}}
     },
-    yAxis:{
-        type:'value',//Y轴的类型为数字类型
+    yAxis: {
+        type: 'value',//Y轴的类型为数字类型
     },
-    series:[
-    {
-        data:{{{json usersTrend.counts}}},
-        type:'line'//数据系列的图表类型为折线图
+    series: [
+        {
+            data: {{{ json usersTrend.counts }}},
+        type: 'line'//数据系列的图表类型为折线图
     }]
 }
-usersThreadChart.setOption(usersThreadOptions);
-const articlesThreadChart = echarts.init(document.getElementById('articlesThreadChart'));
-const articlesThreadOptions = {
-    title:{text:'文章增长趋势'},
-    xAxis:{
-        type:'category',
-        data:{{{json articlesTrend.dates}}}
+    usersThreadChart.setOption(usersThreadOptions);
+    const articlesThreadChart = echarts.init(document.getElementById('articlesThreadChart'));
+    const articlesThreadOptions = {
+        title: { text: '文章增长趋势' },
+        xAxis: {
+            type: 'category',
+            data: {{{ json articlesTrend.dates }}}
     },
-    yAxis:{
-        type:'value',//Y轴的类型为数字类型
+    yAxis: {
+        type: 'value',//Y轴的类型为数字类型
     },
-    series:[
-    {
-        data:{{{json articlesTrend.counts}}},
-        type:'bar'//数据系列的图表类型为柱状图
+    series: [
+        {
+            data: {{{ json articlesTrend.counts }}},
+        type: 'bar'//数据系列的图表类型为柱状图
     }]
 }
-articlesThreadChart.setOption(articlesThreadOptions);
-const categoriesThreadChart = echarts.init(document.getElementById('categoriesThreadChart'));
-const categoriesThreadOptions = {
-    title:{text:'文章分类增长趋势'},
-    xAxis:{
-        type:'category',
-        data:{{{json categoriesTrend.dates}}}
+    articlesThreadChart.setOption(articlesThreadOptions);
+    const categoriesThreadChart = echarts.init(document.getElementById('categoriesThreadChart'));
+    const categoriesThreadOptions = {
+        title: { text: '文章分类增长趋势' },
+        xAxis: {
+            type: 'category',
+            data: {{{ json categoriesTrend.dates }}}
     },
-    yAxis:{
-        type:'value',//Y轴的类型为数字类型
+    yAxis: {
+        type: 'value',//Y轴的类型为数字类型
     },
-    series:[
-    {
-        data:{{{json categoriesTrend.counts}}},
-        type:'bar'//数据系列的图表类型为折线图
+    series: [
+        {
+            data: {{{ json categoriesTrend.counts }}},
+        type: 'bar'//数据系列的图表类型为折线图
     }]
 }
-categoriesThreadChart.setOption(categoriesThreadOptions);
-const tagsThreadChart = echarts.init(document.getElementById('tagsThreadChart'));
-const tagsThreadOptions = {
-    title:{text:'标签增长趋势'},
-    xAxis:{
-        type:'category',
-        data:{{{json tagsTrend.dates}}}
+    categoriesThreadChart.setOption(categoriesThreadOptions);
+    const tagsThreadChart = echarts.init(document.getElementById('tagsThreadChart'));
+    const tagsThreadOptions = {
+        title: { text: '标签增长趋势' },
+        xAxis: {
+            type: 'category',
+            data: {{{ json tagsTrend.dates }}}
     },
-    yAxis:{
-        type:'value',//Y轴的类型为数字类型
+    yAxis: {
+        type: 'value',//Y轴的类型为数字类型
     },
-    series:[
-    {
-        data:{{{json tagsTrend.counts}}},
-        type:'bar'//数据系列的图表类型为折线图
+    series: [
+        {
+            data: {{{ json tagsTrend.counts }}},
+        type: 'bar'//数据系列的图表类型为折线图
     }]
 }
-tagsThreadChart.setOption(tagsThreadOptions);
+    tagsThreadChart.setOption(tagsThreadOptions);
+</script>
+<script id="system-info-template" type="text/x-handlebars-template">
+    <div class="row">
+        <div class="col-md-4">
+            <h5>服务器信息</h5>
+            <table class="table table-striped">
+                <tr><th>主机名</th><td>\{{server.hostname}}</td></tr>
+                <tr><th>IP 地址</th><td>\{{server.ip}}</td></tr>
+                <tr><th>操作系统</th><td>\{{server.os}}</td></tr>
+                <tr><th>架构</th><td>\{{server.arch}}</td></tr>
+            </table>
+        </div>
+        <div class="col-md-4">
+            <h5>CPU 状态</h5>
+            <table class="table table-striped">
+                <tr><th>核心数</th><td>\{{cpu.cores}}</td></tr>
+                <tr><th>用户占用率</th><td>\{{cpu.userLoad}}%</td></tr>
+                <tr><th>系统占用率</th><td>\{{cpu.systemLoad}}%</td></tr>
+                <tr><th>空闲率</th><td>\{{cpu.idle}}%</td></tr>
+            </table>
+        </div>
+        <div class="col-md-4">
+            <h5>内存状态</h5>
+            <table class="table table-striped">
+                <tr><th>总内存</th><td>\{{memory.total}} GB</td></tr>
+                <tr><th>已用内存</th><td>\{{memory.used}} GB</td></tr>
+                <tr><th>剩余内存</th><td>\{{memory.free}} GB</td></tr>
+                <tr><th>使用率</th><td>\{{memory.usage}}%</td></tr>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <h5>磁盘状态</h5>
+            <table class="table table-striped">
+                <thead><tr><th>挂载点</th><th>总空间</th><th>已用</th><th>使用率</th></tr></thead>
+                <tbody>
+                    \{{#each disks}}
+                    <tr>
+                        <td>\{{this.mount}}</td>
+                        <td>\{{this.size}} GB</td>
+                        <td>\{{this.used}} GB</td>
+                        <td>\{{this.usage}}%</td>
+                    </tr>
+                    \{{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+ </script>
+<script>
+    $(function () {
+        $.ajax({
+            url: '/admin/weather',
+            method: 'GET',
+            success: function (data) {
+                $('#weather-info').text(data.weather);
+            },
+            error: function (error) {
+                $('#weather-info').text(error.message);
+            }
+        });
+    });
+</script>
+<script>
+    $(function () {
+        //获取存放在HTML的模板内容
+        const templateSource = $('#system-info-template').html();
+        //使用Handlebars编译模板，将其转换为一个可以渲染上下文数据的函数
+        const render = Handlebars.compile(templateSource);
+        //创建一个EventSource实例，用于从/admin/systemInfo接口接收服务器发送的事件
+        const eventSource = new EventSource('/admin/systemInfo');
+        //当接收到服务器发过来的消息时触发该函数
+        eventSource.onmessage = function (event) {
+            //将接收到的JSOn字符串转成JSON对象
+            const systemInfo = JSON.parse(event.data);
+            //使用渲染方法把对象转化成HTML源代码
+            const systemInfoHtml = render(systemInfo);
+            //将生成的HTML内容替换#systemInfo容器里的内容
+            $('#systemInfo').html(systemInfoHtml);
+
+        }
+        eventSource.onerror = function (event) {
+            console.log('获取服务器系统状态失败');
+        }
+    });
+
 </script>
