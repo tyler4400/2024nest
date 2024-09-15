@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      #revealed{
+        height: 400px;
+        background-color: green;
+        margin-top: 150vh;
+      }
+      #intersect{
+        height: 400px;
+        background-color: red;
+        margin-top: 200vh;
+      }
+    </style>
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+  </head>
+  <body>
+     <div hx-get="/time" hx-trigger="load">loader</div>
+     <div hx-get="/revealed" hx-trigger="revealed" id="revealed">revealed</div>
+     <div hx-get="/intersect" hx-trigger="intersect threshold:0.5" id="intersect">intersect</div>
+  </body>
+</html>

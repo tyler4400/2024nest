@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTMX</title>
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+  </head>
+  <body>
+     <button hx-get="/delay">
+      delay1
+      <p class="htmx-indicator">loading...</p>
+     </button>
+     <button hx-get="/delay" hx-indicator="#my-indicator">
+      delay2
+     </button>
+     <p class="htmx-indicator" id="my-indicator">loading...</p>
+  </body>
+</html>

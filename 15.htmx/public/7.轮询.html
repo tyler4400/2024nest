@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTMX</title>
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+  </head>
+  <body>
+     <div hx-get="/time" hx-trigger="every 1s"></div>
+     <div hx-get="/load_polling" hx-trigger="load delay:1s" hx-swap="outerHTML"></div>
+  </body>
+</html>

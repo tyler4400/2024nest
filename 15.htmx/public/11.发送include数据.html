@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTMX</title>
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+  </head>
+  <body>
+    <input id="name" type="text" name="name" placeholder="Name" />
+    <input id="email" type="email" name="email" placeholder="Email" />
+    <button hx-post="/payload" hx-target="#result" hx-include="#name,#email">发送include数据</button>
+    <div id="result"></div>
+  </body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTMX</title>
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+    <script>
+      function getName(){
+        return document.querySelector('input[name="name"]').value;
+      }
+      function getEmail(){
+        return document.querySelector('input[name="email"]').value;
+      }
+    </script>
+  </head>
+  <body>
+    <input type="text" name="name" placeholder="Name" />
+    <input type="email" name="email" placeholder="Email" />
+    <button 
+    hx-post="/payload" 
+    hx-trigger="click" 
+    hx-vals='{"name":"xx","email":"yy"}'
+    hx-target="#result">
+      发送JSON数据
+    </button>
+    <button 
+    hx-post="/payload" 
+    hx-trigger="click" 
+    hx-vals='js:{"name":getName(),"email":getEmail()}'
+    hx-confirm="确认要发送吗?"
+    hx-target="#result">
+      发送JS数据
+    </button>
+    <div id="result"></div>
+  </body>
+</html>

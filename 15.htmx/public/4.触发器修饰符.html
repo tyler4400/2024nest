@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+  </head>
+  <body>
+   <input 
+    type="text" 
+    name="keyword" 
+    hx-get="/search"
+    hx-trigger="keyup changed delay:500ms"
+    hx-target="#search-result"
+    placeholder="搜索..."
+    >
+    <div id="search-result"></div>
+  </body>
+</html>
