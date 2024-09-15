@@ -89,4 +89,7 @@ export class ConfigurationService{
    get redisPassword ():string{
     return this.configService.get<string>('REDIS_PASSWORD');
    }
+   get jwtSecret():string{
+    return this.configService.get<string>('JWT_SECRET');
+   }
 }

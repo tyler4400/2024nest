@@ -18,6 +18,7 @@ async function bootstrap() {
   useContainer(app.select(AppModule),{fallbackOnErrors:true});
   //配置静态文件根目录
   app.useStaticAssets(join(__dirname,'..','public'));
+  app.useStaticAssets(join(__dirname,'..','front'));
   //app.useStaticAssets(join(__dirname,'..','uploads'));
   //配置模板文件的根目录
   app.setBaseViewsDir(join(__dirname,'..','views'));
