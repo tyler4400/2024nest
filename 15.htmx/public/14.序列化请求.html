@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTMX</title>
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+  </head>
+  <body>
+    <button id="firstRequest" hx-get="/firstRequest" hx-target="#result1">
+      firstRequest
+    </button>
+    <button
+      id="secondRequest"
+      hx-get="/secondRequest"
+      hx-target="#result2"
+      hx-sync="#firstRequest:drop"
+    >
+      secondRequest:drop
+    </button>
+    <button
+      id="secondRequest"
+      hx-get="/secondRequest"
+      hx-target="#result2"
+      hx-sync="#firstRequest:replace"
+    >
+      secondRequest:replace
+    </button>
+    <button
+      id="secondRequest"
+      hx-get="/secondRequest"
+      hx-target="#result2"
+      hx-sync="#firstRequest:queue"
+    >
+      secondRequest:queue
+    </button>
+    <div id="result1"></div>
+    <div id="result2"></div>
+  </body>
+</html>

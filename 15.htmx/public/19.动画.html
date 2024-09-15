@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTMX</title>
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+    <style>
+      .circle{
+        border-radius: 50%;
+        background-color: red;
+        transition: all 1s ease-in;
+      }
+    </style>
+  </head>
+  <body>
+     <div id="circle" class="circle" hx-get="/bigger" hx-swap="outerHTML" style="width:100px;height:100px;"></div>
+  </body>
+</html>

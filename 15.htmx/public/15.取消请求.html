@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTMX</title>
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+  </head>
+  <body>
+     <button type="button" id="request-button" hx-get="/delay">发送请求</button>
+     <button type="button" onclick="htmx.trigger('#request-button','htmx:abort')">取消#request-button的请求</button>
+  </body>
+</html>

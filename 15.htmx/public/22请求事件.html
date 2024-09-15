@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTMX</title>
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+  </head>
+  <body>
+     <button hx-get="/time" hx-target="#target">获取时间</button>
+     <div id="target"></div>
+     <script>
+      htmx.on('htmx:beforeRequest',(event)=>{
+        console.log('htmx:beforeRequest')
+        console.log(event.detail.requestConfig.headers)
+      });
+      htmx.on('htmx:afterRequest',(event)=>{
+        console.log('htmx:afterRequest')
+        console.log(event.detail.xhr.response)
+      });
+      htmx.on('htmx:responseError',(event)=>{
+        //此事件在请求失败的时候触发，通常是服务器返回非2xx的状态码
+        //你可以在此处理错误，比如显示错误消息工执行重试的逻辑
+        console.log('htmx:responseError')
+        console.log(event.detail.xhr.response)
+      });
+     </script>
+  </body>
+</html>

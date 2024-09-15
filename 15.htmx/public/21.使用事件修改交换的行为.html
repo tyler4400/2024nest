@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTMX</title>
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+  </head>
+  <body>
+     <button hx-get="/time" hx-target="#target">
+      获取当前的时间
+     </button>
+    <div id="target"></div>
+    <script>
+      htmx.on('htmx:beforeSwap',(event)=>{
+        console.log('htmx:beforeSwap')
+        console.log(event.detail.elt)
+      });
+      htmx.on('htmx:afterSwap',(event)=>{
+        console.log('htmx:afterSwap')
+        console.log(event.detail.elt)
+        event.detail.elt.style.color='red'
+      });
+    </script>
+  </body>
+</html>

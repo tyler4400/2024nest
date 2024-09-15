@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTMX</title>
+    <style>
+      #targetParent{
+        border:5px solid red;
+        padding:10px;
+      }
+      #target{
+        border:5px solid blue;
+        padding:10px;
+      }
+      #target-child1{
+        border:5px solid green;
+        padding:10px;
+      }
+      #target-child2{
+        border:5px solid purple;
+        padding:10px;
+      }
+    </style>
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+  </head>
+  <body>
+    <button hx-get="/time" hx-target="#target" hx-swap="beforebegin">beforebegin-变成target的哥哥</button>
+    <button hx-get="/time" hx-target="#target" hx-swap="afterbegin">afterbegin-变成target第一子元素之前，就是太子</button>
+    <button hx-get="/time" hx-target="#target" hx-swap="beforeend">beforeend-变成target最后一个子元素，最小的儿子</button>
+    <button hx-get="/time" hx-target="#target" hx-swap="afterend">afterend-变成target的弟弟</button>
+    <button hx-get="/time" hx-target="#target" hx-swap="delete">delete</button>
+    <button hx-get="/time" hx-target="#target" hx-swap="none">none</button>
+    <button hx-get="/time" hx-target="#target" hx-swap="innerHTML">innerHTML-替换target整个子元素</button>
+    <button hx-get="/time" hx-target="#target" hx-swap="outerHTML">outerHTML-替换target元素target本身</button>
+    <div id="targetParent">targetParent
+      <div id="target">target
+        <div id="target-child1">target-child1</div>
+        <div id="target-child2">target-child2</div>
+      </div>
+    </div>
+  </body>
+</html>

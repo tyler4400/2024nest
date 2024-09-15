@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTMX</title>
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+  </head>
+  <body>
+     <script>
+      document.body.addEventListener('htmx:load',function(event){
+        console.log('addEventListener.htmx:load',event);
+      });
+      htmx.on('htmx:load',function(event){
+        console.log('htmx.htmx:load',event);
+      });
+      htmx.onLoad(function(event){
+        console.log('onLoad',event);
+      });
+     </script>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTMX</title>
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+  </head>
+  <body>
+     <button hx-get="/req" hx-target="#target">获取时间</button>
+     <div id="target"></div>
+     <script>
+      htmx.on('htmx:configRequest',(event)=>{
+       event.detail.headers['Authorization']="Bearer token";
+       event.detail.parameters['version']='2.0';//query参数
+      });
+      /* htmx.logger = function(elt,event,data){
+          console.log(elt,event,data)
+      } */
+     </script>
+  </body>
+</html>

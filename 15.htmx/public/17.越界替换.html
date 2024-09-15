@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTMX</title>
+    <style>
+      #targetParent{
+        border:5px solid red;
+        padding:10px;
+      }
+      #target{
+        border:5px solid blue;
+        padding:10px;
+      }
+      #target-child1{
+        border:5px solid green;
+        padding:10px;
+      }
+      #target-child2{
+        border:5px solid purple;
+        padding:10px;
+      }
+    </style>
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+  </head>
+  <body>
+    <button hx-get="/oob" hx-target="#mainTarget">加载内容</button>
+    <div id="mainTarget">
+      主要目标
+    </div>
+    <div id="otherTarget">次要目标</div>
+  </body>
+</html>

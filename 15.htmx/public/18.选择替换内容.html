@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTMX</title>
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+  </head>
+  <body>
+     <button hx-get="/select" hx-target="#mainTarget" hx-select="#otherTarget">
+      加载内容
+     </button>
+     <div id="mainTarget">
+
+     </div>
+  </body>
+</html>
