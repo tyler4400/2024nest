@@ -21,7 +21,7 @@ export class CreateUserDto {
     @MobileValidators()
     @ApiProperty({description:'手机号',example:'15788888888'})
     @ApiPropertyOptional()
-    mobile: string;
+    phone: string;
 
     @EmailValidators()
     @ApiProperty({description:'邮件',example:'nick@qq.com'})

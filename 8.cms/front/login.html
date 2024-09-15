@@ -22,9 +22,17 @@
                 <a class="nav-link active" id="password-login-tab" data-bs-toggle="tab" href="#password-login"
                     role="tab">密码登录</a>
             </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="email-login-tab" data-bs-toggle="tab" href="#email-login"
+                    role="tab">邮箱验证码登录</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="phone-login-tab" data-bs-toggle="tab" href="#phone-login"
+                    role="tab">手机验证码登录</a>
+            </li>
         </ul>
-        <div class="tab-container" id="login-tab-content">
-            <div class="tab-pane fade show active" id="password-login" role="tabpanel">
+        <div class="tab-content" id="login-tab-content">
+            <div class="tab-pane fade show active " id="password-login" role="tabpanel">
                 <div class="mt-3">
                     <label for="username" class="form-control">用户名</label>
                     <input type="text" class="form-control" id="username" name="username" required />
@@ -38,24 +46,89 @@
                     登录
                 </button>
             </div>
+            <div class="tab-pane fade" id="email-login" role="tabpanel">
+                <div class="mt-3">
+                    <label for="email" class="form-control">邮箱</label>
+                    <input type="text" class="form-control" id="email" name="email" required />
+                </div>
+                <div class="mt-3">
+                    <button  class="btn btn-primary mt-3" id="send-email-code-button" 
+                    hx-post="/api/auth/send-email-code"
+                    hx-trigger="click" hx-include="#email" hx-swap="none">
+                    发送邮箱验证码
+                    </button>
+                </div>
+                <div class="mt-3">
+                    <label for="code" class="form-control">验证码</label>
+                    <input type="text" class="form-control" id="code" name="code" required />
+                </div>
+                <button id="email-login-button" class="btn btn-primary mt-3" 
+                    hx-post="/api/auth/login-email-code"
+                    hx-trigger="click" hx-include="#email,#code" hx-swap="none">
+                    邮箱验证码登录
+                </button>
+            </div>
+            <div class="tab-pane fade" id="phone-login" role="tabpanel">
+                <div class="mt-3">
+                    <label for="phone" class="form-control">手机号</label>
+                    <input type="text" class="form-control" id="phone" name="phone" required />
+                </div>
+                <div class="mt-3">
+                    <button  class="btn btn-primary mt-3" id="send-phone-code-button" 
+                    hx-post="/api/auth/send-phone-code"
+                    hx-trigger="click" hx-include="#phone" hx-swap="none">
+                    发送手机验证码
+                    </button>
+                </div>
+                <div class="mt-3">
+                    <label for="phoneCode" class="form-control">验证码</label>
+                    <input type="text" class="form-control" id="phoneCode" name="phoneCode" required />
+                </div>
+                <button id="phone-login-button" class="btn btn-primary mt-3" 
+                    hx-post="/api/auth/login-phone-code"
+                    hx-trigger="click" hx-include="#phone,#phoneCode" hx-swap="none">
+                    手机验证码登录
+                </button>
+            </div>
         </div>
         <div id="error-message" class="alert alert-danger d-none mt-3"></div>
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+            <div id="toast-message" class="toast" role="alert">
+                <div class="toast-header">
+                    <strong class="me-auto">提示</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body" id="toast-body">
+
+                </div>
+            </div>
+        </div>
     </div>
     <script>
         function handleLoginResponse(event) {
             const response = JSON.parse(event.detail.xhr.responseText);
             if (response.success) {
                 localStorage.setItem('access_token', response.access_token);
+                localStorage.setItem('refresh_token', response.refresh_token);
                 window.location.href = '/';
             } else {
                 $('#error-message').text(response.message).removeClass('d-none');
             }
         }
+        function showToast(message){
+            $('#toast-body').text(message);
+            new bootstrap.Toast(document.getElementById('toast-message')).show();
+        }
+        function handleSendCodeResponse(event){
+            const response = JSON.parse(event.detail.xhr.responseText);
+            showToast(response.message);
+        }
         $(function () {
-            $('#password-login-button').on(
-                'htmx:afterRequest',
-                handleLoginResponse,
-            );
+            $('#password-login-button').on('htmx:afterRequest',handleLoginResponse);
+            $('#send-email-code-button').on('htmx:afterRequest',handleSendCodeResponse);
+            $('#email-login-button').on('htmx:afterRequest',handleLoginResponse);
+            $('#send-phone-code-button').on('htmx:afterRequest',handleSendCodeResponse);
+            $('#phone-login-button').on('htmx:afterRequest',handleLoginResponse);
         });
     </script>
 </body>

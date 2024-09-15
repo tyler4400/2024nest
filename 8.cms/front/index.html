@@ -18,26 +18,96 @@
     <header class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">首页</a>
-            <div class="d-flex" hx-get="/api/auth/profile" hx-trigger="load"
-            hx-ext="client-side-templates"
-            handlebars-template="profile-template"
-            hx-swap="innerHTML"
-            >
-            
-            </div>
+            <div id="profile-container" class="d-flex" hx-get="/api/auth/profile" hx-trigger="load"
+                hx-ext="client-side-templates" handlebars-template="profile-template" hx-swap="innerHTML"></div>
+            <div id="profile2-container" class="d-flex" hx-get="/api/auth/profile2" hx-trigger="load"
+                hx-ext="client-side-templates" handlebars-template="profile-template" hx-swap="innerHTML"></div>
         </div>
     </header>
     <script id="profile-template" type="text/x-handlebars-template">
-        <span>欢迎 {{user.username}}</span>
+        <span hx-xx>欢迎 {{user.username}}</span>
     </script>
     <script>
-        $('body').on('htmx:configRequest',function(event){
+        $('body').on('htmx:configRequest', function (event) {
             //每次发请求之前先把本地保存的token附加到请求里面
             const accessToken = localStorage.getItem('access_token');
-            if(accessToken){
-                event.detail.headers['Authorization']=`Bearer ${accessToken}`;
+            if (accessToken) {
+                event.detail.headers['Authorization'] = `Bearer ${accessToken}`;
             }
         });
+    </script>
+    <script>
+        //当前是否正在刷新Token
+        let isRefreshingAccessToken = false;
+        //刷新Token的订阅者
+        const refreshSubscribers = [];
+        function subscribeTokenRefresh(callback) {
+            refreshSubscribers.push(callback);
+        }
+        function onRefreshed(newAccessToken) {
+            refreshSubscribers.forEach(callback => callback(newAccessToken));
+            refreshSubscribers.length = 0;
+        }
+
+
+        async function refreshAccessToken() {
+            if (!isRefreshingAccessToken) {
+                isRefreshingAccessToken = true;//设置为正在刷新Token
+                try {
+                    const response = await fetch('/api/auth/refresh-token', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ refreshToken: localStorage.getItem('refresh_token') })
+                    })
+                    const data = await response.json();
+                    if (data.success) {
+                        localStorage.setItem('access_token', data.access_token);
+                        localStorage.setItem('refresh_token', data.refresh_token);
+                        onRefreshed(data.access_token);
+                        return true;
+                    } else {
+                        window.location.href = '/login.html';
+                        return false;
+                    }
+                } catch (error) {
+                    window.location.href = '/login.html';
+                    return false;
+                }finally{
+                    isRefreshingAccessToken=false;
+                }
+            }
+
+        }
+        function reloadProfileContainer(accessToken,event) {
+            fetch(event.detail.pathInfo.path, {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            }).then(res => res.json())
+                .then(data => {
+                    const templateSource = document.getElementById('profile-template').innerHTML;
+                    const template = Handlebars.compile(templateSource);
+                    const html = template(data);
+                    event.target.innerHTML=html;
+                    //处理指定DOM元素素上的htmx指令,让HTMX识别这些指令 进行后续处理
+                    htmx.process(event.target);
+                }).catch(error => console.error('Error fetching profile:', error))
+        }
+        $('body').on('htmx:afterOnLoad', async function (event) {
+            //如果说响应的状态码是401，说明访问失败了
+            if (event.detail.xhr.status === 401) {//可能是因为access_token过期了,可以尝试自动用
+                //如果当前没有正在刷新Token
+                if (!isRefreshingAccessToken) {
+                    const success = await refreshAccessToken();
+                    if (success) {//说明刷新Token成功了
+                        const accessToken = localStorage.getItem('access_token');
+                        reloadProfileContainer(accessToken,event)
+                    }
+                } else {
+                    subscribeTokenRefresh((newAccessToken) => {
+                        reloadProfileContainer(newAccessToken,event)
+                    });
+                }
+            }
+        })
     </script>
 </body>
 

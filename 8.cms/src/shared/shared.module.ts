@@ -29,6 +29,7 @@ import { DashboardService } from './services/dashboard.service';
 import { WeatherService } from './services/weather.service';
 import { SystemService } from './services/system.service';
 import { RedisService } from './services/redis.service';
+import { PhoneService } from './services/phone.service';
 @Global()
 @Module({
     providers: [
@@ -36,12 +37,12 @@ import { RedisService } from './services/redis.service';
         UserService, RoleService, AccessService, TagService, ArticleService, 
         CategoryService, CosService, NotificationService, MailService, 
         WordExportService,PptExportService,ExcelExportService, SettingService, 
-        DashboardService, WeatherService, SystemService, RedisService],
+        DashboardService, WeatherService, SystemService, RedisService, PhoneService],
     exports: [IsUsernameUniqueConstraint, ConfigurationService, UtilityService, 
         UserService, RoleService, AccessService, TagService, ArticleService, 
         CategoryService,CosService, NotificationService, MailService,
         WordExportService,PptExportService,ExcelExportService,SettingService,DashboardService,
-        WeatherService,SystemService,RedisService],
+        WeatherService,SystemService,RedisService,PhoneService],
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
         MongooseModule.forRootAsync({

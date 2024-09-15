@@ -22,7 +22,7 @@ export class User{
         return value?value.replace(/(\d{3})(\d{4})(\d{4})/,'$1****$3'):value;
     })
     @ApiProperty({description:'手机号',example:'15788888888'})
-    mobile:string
+    phone:string
 
     @Expose()
     @ApiProperty({description:'联系方式',example:'邮箱:nick@qq.com'})
