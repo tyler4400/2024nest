@@ -4,4 +4,5 @@ export enum QrCodeStatusEnum{
     AUTHORIZED = 'authorized',//用户已经授权登录
     DENIED = 'denied',//用户不授权
     EXPIRED = 'expired',//二维码已过期
+    ERROR = 'error',//流程出来未知的错误
 }

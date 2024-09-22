@@ -136,12 +136,7 @@
             const response = JSON.parse(event.detail.xhr.responseText);
             showToast(response.message);
         }
-        function fetchQrCode(){
-            $.get('/api/auth/qrcode',function(data){
-                $('#qrcode').attr('src',data.qrCode);
-                $('#qrcodeStatus').text('')
-            });
-        }
+        
         $(function () {
             $('#password-login-button').on('htmx:afterRequest',handleLoginResponse);
             $('#send-email-code-button').on('htmx:afterRequest',handleSendCodeResponse);
@@ -149,9 +144,49 @@
             $('#send-phone-code-button').on('htmx:afterRequest',handleSendCodeResponse);
             $('#phone-login-button').on('htmx:afterRequest',handleLoginResponse);
 
+           
+        });
+    </script>
+    <script>
+        let $interval;
+        function handleQrCodeResponse({status,access_token,refresh_token}){
+            const statusMessages = {
+                'scanned':'已扫描，等待确认',
+                'authorized':'登录成功',
+                'denied':'取消授权',
+                'expired':'二维码已过期，请点击刷新二维码',
+                'error':'发生未知错误，请点击刷新二维码',
+            }
+            $('#qrcodeStatus').text(statusMessages[status]??'');
+            //如果不是说初始态，则图片变透明
+            if(status !== 'pending')$('#qrcode').css('opacity',.1);
+            if(status === 'authorized'){
+                localStorage.setItem('access_token',access_token);
+                localStorage.setItem('refresh_token',refresh_token);
+                window.location.href = '/';
+            }
+            if(status!=='pending' && status !=='scanned'){
+                clearInterval($interval)
+            }
+        }
+        function pollingLoginStatus(token){
+            $interval=setInterval(function(){
+                $.get(`/api/auth/check-qrcode-status?token=${token}`,handleQrCodeResponse);
+            },1000);
+        }
+        //刷新登录的二维码
+        function fetchQrCode(){
+            if( $interval) clearInterval( $interval)
+            $.get('/api/auth/qrcode',function(data){
+                $('#qrcode').attr('src',data.qrCode);
+                $('#qrcodeStatus').text('')
+                pollingLoginStatus(data.token)
+            });
+        }
+        $(function(){
             $('#qrcode-login-tab').on('shown.bs.tab',fetchQrCode);
             $('#qrcode').on('click',fetchQrCode);
-        });
+        })
     </script>
 </body>
 

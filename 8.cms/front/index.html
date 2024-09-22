@@ -12,6 +12,12 @@
     <script src="/js/htmx.min.js"></script>
     <script src="/js/handlebars.min.js"></script>
     <script src="/js/client-side-templates.js"></script>
+    <style>
+        .nav-link.active{
+            background-color: green;
+            color:red;
+        }
+    </style>
 </head>
 
 <body>
@@ -20,14 +26,161 @@
             <a class="navbar-brand" href="#">首页</a>
             <div id="profile-container" class="d-flex" hx-get="/api/auth/profile" hx-trigger="load"
                 hx-ext="client-side-templates" handlebars-template="profile-template" hx-swap="innerHTML"></div>
-            <div id="profile2-container" class="d-flex" hx-get="/api/auth/profile2" hx-trigger="load"
-                hx-ext="client-side-templates" handlebars-template="profile-template" hx-swap="innerHTML"></div>
         </div>
     </header>
+    <div id="categories-container" class="container mb-3" hx-get="/api/categories" hx-trigger="load"
+    hx-ext="client-side-templates" handlebars-template="categories-template" hx-swap="innerHTML"
+    hx-vals="javascript:{selectedCategoryId:localStorage.getItem('selectedCategoryId')??''}"
+    ></div>
+    <div id="tags-container" class="container mb-3" hx-get="/api/tags" hx-trigger="load"
+    hx-ext="client-side-templates" handlebars-template="tags-template" hx-swap="innerHTML"
+    hx-vals="javascript:{selectedTagId:localStorage.getItem('selectedTagId')??''}"
+    ></div>
+    <div class="container mb-3">
+        <input id="search-keyword" class="form-control" placeholder="请输入关键字"
+        hx-get="/api/articles" hx-target="#article-list" hx-trigger="keyup"
+        hx-vals="javascript:{keyword:document.getElementById('search-keyword').value,selectedCategoryId:localStorage.getItem('selectedCategoryId')??'',selectedTagId:localStorage.getItem('selectedTagId')??''}"
+        hx-ext="client-side-templates" 
+        handlebars-template="article-list-template" 
+        hx-swap="innerHTML"
+        />
+
+    </div>
+    <div class="container" id="article-list" hx-trigger="load"
+                hx-get="/api/articles"
+                hx-ext="client-side-templates" 
+                handlebars-template="article-list-template" 
+                hx-swap="innerHTML"
+    ></div>
     <script id="profile-template" type="text/x-handlebars-template">
         <span hx-xx>欢迎 {{user.username}}</span>
     </script>
+    <script id="categories-template" type="text/x-handlebars-template">
+        <ul class="nav nav-pill">
+            <li class="nav-item">
+                <a 
+                onclick="setSelectedCategoryId('')"
+                class="nav-link {{#if (eq selectedCategoryId '')}}active{{/if}}" 
+                href="#"
+                hx-get="/api/article"
+                hx-target="#article-list"
+                hx-ext="client-side-templates" 
+                hx-vals="javascript:{keyword:document.getElementById('search-keyword').value,selectedTagId:localStorage.getItem('selectedTagId')??''}"
+                handlebars-template="article-list-template" 
+                hx-swap="innerHTML"
+                >全部</a>
+              </li>
+            {{#each categories}}
+              <li class="nav-item">
+                <a 
+                onclick="setSelectedCategoryId('{{id}}')"
+                class="nav-link {{#if (eq ../selectedCategoryId this.id)}}active{{/if}}" 
+                href="#"
+                hx-get="/api/articles?categoryId={{id}}"
+                hx-vals="javascript:{keyword:document.getElementById('search-keyword').value,selectedTagId:localStorage.getItem('selectedTagId')??''}"
+                hx-target="#article-list"
+                hx-ext="client-side-templates" 
+                handlebars-template="article-list-template" 
+                hx-swap="innerHTML"
+                >{{name}}</a>
+              </li>
+            {{/each}}
+
+        </ul>
+    </script>
+    <script id="tags-template" type="text/x-handlebars-template">
+        <ul class="nav nav-pill">
+            <li class="nav-item">
+                <a 
+                onclick="setSelectedTagId('')"
+                class="nav-link {{#if (eq selectedTagId '')}}active{{/if}}" 
+                href="#"
+                hx-get="/api/articles"
+                hx-target="#article-list"
+                hx-ext="client-side-templates" 
+                handlebars-template="article-list-template" 
+                hx-vals="javascript:{keyword:document.getElementById('search-keyword').value,selectedCategoryId:localStorage.getItem('selectedCategoryId')??''}"
+                hx-swap="innerHTML"
+                >全部</a>
+              </li>
+            {{#each tags}}
+              <li class="nav-item">
+                <a 
+                onclick="setSelectedTagId('{{id}}')"
+                class="nav-link {{#if (eq ../selectedTagId this.id)}}active{{/if}}" 
+                href="#"
+                hx-get="/api/articles?tagId={{id}}"
+                hx-target="#article-list"
+                hx-ext="client-side-templates" 
+                hx-vals="javascript:{keyword:document.getElementById('search-keyword').value,selectedCategoryId:localStorage.getItem('selectedCategoryId')??''}"
+                handlebars-template="article-list-template" 
+                hx-swap="innerHTML"
+                >{{name}}</a>
+              </li>
+            {{/each}}
+        </ul>
+    </script>
+    <script id="article-list-template" type="text/x-handlebars-template">
+        <ul class="list-group">
+            {{#each articles}}
+              <li class="list-group-item">
+                <h5><a href="/article.html?id={{id}}">{{title}}</a></h5>
+                <p>分类
+                    {{#each categories}}
+                      <a
+                       onclick="setSelectedCategoryId('{{id}}')"
+                       href="#"
+                       hx-get="/api/articles?categoryId={{id}}"
+                       hx-target="#article-list"
+                      >{{name}}</a>
+                    {{/each}}
+                </p>
+                <p>标签
+                    {{#each tags}}
+                      <a
+                       onclick="setSelectedTag('{{id}}')"
+                       href="#"
+                       hx-get="/api/articles?tagId={{id}}"
+                       hx-target="#article-list"
+                      >{{name}}</a>
+                    {{/each}}
+                </p>
+              </li>
+            {{/each}}
+        </ul>
+    </script>
     <script>
+        Handlebars.registerHelper('eq',function(a,b){
+        console.log('a=',a,'b=',b);
+          return a == b;
+        });
+        function setSelectedCategoryId(categoryId){
+            localStorage.setItem('selectedCategoryId',categoryId);
+            fetch(`/api/categories?selectedCategoryId=${categoryId}`)
+            .then(res=>res.json())
+            .then(data=>{
+                const templateSource = document.getElementById('categories-template').innerHTML;
+                const render = Handlebars.compile(templateSource);
+                const html = render(data);
+                const categoriesContainer= document.getElementById('categories-container');
+                categoriesContainer.innerHTML = html;
+                htmx.process(categoriesContainer);
+            })
+        }
+        function setSelectedTagId(tagId){
+            localStorage.setItem('selectedTagId',tagId);
+            fetch(`/api/tags?selectedTagId=${tagId}`)
+            .then(res=>res.json())
+            .then(data=>{
+                const templateSource = document.getElementById('tags-template').innerHTML;
+                const render = Handlebars.compile(templateSource);
+                const html = render(data);
+                const tagsContainer= document.getElementById('tags-container');
+                tagsContainer.innerHTML = html;
+                htmx.process(tagsContainer);
+            })
+
+        }
         $('body').on('htmx:configRequest', function (event) {
             //每次发请求之前先把本地保存的token附加到请求里面
             const accessToken = localStorage.getItem('access_token');
