@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天室</title>
+    <link href="https://static.docs-hub.com/bootstrapmin_1726934364785.css" rel="stylesheet">
+    <script src="https://static.docs-hub.com/jquery360min_1726934373776.js"></script>
+    <script src="https://static.docs-hub.com/socketiomin_1726934381484.js"></script>
+    <style>
+        .list-group-item.active {
+            background-color: green;
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="mt-5 text-center">聊天室</h1>
+        <div id="loginForm" class="my-4">
+            <div class="mb-3">
+                <label for="username" class="form-label">用户名</label>
+                <input type="text" class="form-control" id="username" placeholder="请输入用户名" />
+            </div>
+            <button id="loginBtn" class="btn btn-primary">登录</button>
+        </div>
+        <div id="roomSection" class="d-none">
+            <h3>房间列表</h3>
+            <ul id="roomList" class="list-group mb-3"></ul>
+            <div class="mb-3">
+                <label for="roomName" class="form-label">房间名</label>
+                <input type="text" class="form-control" id="roomName" placeholder="请输入房间名" />
+            </div>
+            <button id="createRoomBtn" class="btn btn-success">创建房间</button>
+        </div>
+        <div id="chatWindow" class="d-none">
+            <div class="card">
+                <div class="card-header">
+                    聊天信息
+                    <span class="float-end">
+                        当前用户:<strong id="currentUsername"></strong>
+                        <span id="currentRoomInfo">|房间:<strong id="currentRoom">大厅</strong></span>
+                    </span>
+                </div>
+                <div class="card-body" id="messages" style="height:300px;overflow-y: scroll;"></div>
+                <div class="card-footer">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="messageInput" placeholder="请输入消息" />
+                        <button class="btn btn-primary" id="sendMessageBtn">发送</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script>
+        let username = ''
+        let socket = null;
+        let room = '';
+        $('#loginBtn').on('click', () => {
+            username = $('#username').val();
+            if (!username) {
+                alert('请输入用户名');
+                return;
+            }
+            $('#currentUsername').text(username);
+            $('#roomSection').removeClass('d-none');
+            $('#chatWindow').removeClass('d-none');
+            $('#loginForm').hide();
+            socket = io('/');
+            socket.on('userJoined', (data) => {
+                const message = $('<div>').text(`系统消息:${data.username}加入了聊天室`);
+                $('#messages').append(message);
+            });
+            socket.on('userJoinedRoom', (data) => {
+                const message = $('<div>').text(`系统消息:${data.username}加入了${data.room}房间`);
+                $('#messages').append(message);
+            });
+            socket.on('userLeavedRoom', (data) => {
+                const message = $('<div>').text(`系统消息:${data.username}离开了${data.room}房间`);
+                $('#messages').append(message);
+            });
+            socket.on('messageCreated', (data) => {
+                const message = $('<div>').text(`${data.username}: ${data.message}`);
+                $('#messages').append(message);
+            });
+            function joinRoom(roomName) {
+                room = roomName;
+                $('#currentRoom').text(room);
+                //还要告诉服务器我这个客户端已经加入了某个房间了，以事发消息只发到这个房间内
+                socket.emit('joinRoom', { username, room });
+            }
+            function leaveRoom(roomName) {
+                room = '';
+                $('#currentRoom').text('大厅');
+                socket.emit('leaveRoom', { username, room });
+            }
+            socket.on('roomList', (rooms) => {
+                $('#roomList').empty();
+                rooms.forEach(roomName => {
+                    const isCurrentRoom = roomName == room;
+                    const roomElement = $(`<li>`).addClass('list-group-item').addClass(isCurrentRoom ? 'active' : '').text(roomName);
+                    if (isCurrentRoom) {
+                        const leaveButton = $(`<button>`).addClass('btn btn-danger float-end').text('离开');
+                        leaveButton.on('click', () => leaveRoom(roomName));
+                        roomElement.append(leaveButton)
+                    } else {
+                        const joinButton = $(`<button>`).addClass('btn btn-primary float-end').text('加入');
+                        joinButton.on('click', () => joinRoom(roomName));
+                        roomElement.append(joinButton)
+                    }
+                    $('#roomList').append(roomElement);
+                });
+            });
+            socket.on('connect', () => {
+                console.log('客户端已经连接成功服务器');
+                //当客户端连接上服务器之后 向ws服务器发送一个消息，消息类型为userJoined,参数就是用户名
+                socket.emit('userJoined', { username });
+                socket.emit('requestRooms');//请求房间列表
+            });
+        });
+        $('#createRoomBtn').on('click', () => {
+            const roomName = $('#roomName').val();
+            if (!roomName) {
+                alert('房间名不能为空');
+                return;
+            }
+            socket.emit('createRoom', { roomName });
+            $('#roomName').val('');
+        })
+        $('#sendMessageBtn').on('click', () => {
+            const message = $('#messageInput').val();
+            if (message && socket && username) {
+                let recipient = null;//私聊的对象
+                let actualMessage = message;
+                let atIndex = message.indexOf('@');// @对方的呢称 要发送的消息
+                if (atIndex !== -1) {//如果有@符说明是私聊
+                    const endOfUsername = message.indexOf(' ', atIndex);
+                    recipient = message.substring(atIndex + 1, endOfUsername);
+                    actualMessage = message.substring(endOfUsername + 1)
+                }
+                const messageData = { username, message: actualMessage, recipient, room };
+                socket.emit('createMessage', messageData);
+                $('#messageInput').val('');
+            } else {
+                alert('消息不能为空');
+            }
+        });
+        window.addEventListener('beforeunload', () => socket?.disconnect());
+    </script>
+</body>
+
+</html>
