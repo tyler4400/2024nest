@@ -1,0 +1,68 @@
+services:
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - '80:80'
+    depends_on:
+      - node  
+    networks:
+      - cms-network 
+  # 构建Nodejs服务
+  node:
+    # 构建Node.js服务的Docker镜像
+    build:
+      # 设置构建上下文为当前的目录
+      context: .
+      # 使用当前目录的Dockerfile进行构建
+      dockerfile: Dockerfile
+    # 加载环境变量文件 .env  
+    env_file:
+      - .env.docker  
+    #设置服务的依赖，确保在启动Node服务前先启动依赖的服务
+    depends_on:
+      - mysql
+      - redis
+      - mongodb 
+    networks:
+      - cms-network 
+  mysql:
+    # 使用官方的MYSQL8.0镜像
+    image: mysql:8.0
+    #挂载数据卷来持久化数据库
+    volumes:
+      - mysql-data:/var/lib/mysql
+      # 挂载本地的init.sql文件 到容器内，用于数据初始化
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    #设置必要的环境变量，包括mysql的root密码和默认的数据库的名称
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: cms 
+    networks:
+      - cms-network   
+  redis:
+    image: redis:6.2
+    volumes:
+      - redis-data:/data
+    networks:
+      - cms-network  
+  mongodb:
+    image: mongo:5.0
+    volumes:
+      - mongodb-data:/data/db
+    environment:
+      # 设置环境变量，设置指定Mongodb初始化的时候创建的数据库的名称
+      MONGO_INITDB_DATABASE: cms
+    networks:
+      - cms-network
+
+# 在宿主机内创建三个数据卷，用于持久化数据  
+volumes:
+  mysql-data:
+  redis-data:
+  mongodb-data: 
+# 定义桥接网络，用于各服务之间的通知    
+networks:
+  cms-network:
+    driver: bridge
