@@ -3,21 +3,30 @@ import { Injectable } from "@nestjs/common";
 import * as bcrypt from 'bcrypt'
 import * as svgCaptcha from 'svg-captcha';
 @Injectable()
-export class UtilityService{
-    async hashPassword(password:string):Promise<string>{
+export class UtilityService {
+    async hashPassword(password: string): Promise<string> {
         //生成一个盐值，用于增强哈希的案例性
         const salt = await bcrypt.genSalt();
         //使用生成的盐值对密码进行哈希，并返回哈希的结果
-        return bcrypt.hash(password,salt);
+        return bcrypt.hash(password, salt);
     }
-    async comparePassword(password:string,hash:string):Promise<boolean>{
+    async comparePassword(password: string, hash: string): Promise<boolean> {
         //比较密码和hash值，返回比较结果  true  or false
-        return bcrypt.compare(password,hash)
+        return bcrypt.compare(password, hash)
     }
-    generateCaptcha(options){
+    generateCaptcha(options) {
         return svgCaptcha.create(options);
     }
-    generateVerificationCode(){
-        return Math.floor(100000+Math.random()*900000).toString();
+    generateVerificationCode() {
+        return Math.floor(100000 + Math.random() * 900000).toString();
+    }
+    generateRandomString(length: number = 32): string {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            const randomIndex = Math.floor(Math.random() * chars.length);
+            result += chars[randomIndex];
+        }
+        return result;
     }
 }

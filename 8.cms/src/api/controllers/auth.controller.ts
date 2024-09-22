@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { UserService } from 'src/shared/services/user.service';
 import { UtilityService } from 'src/shared/services/utility.service';
 import { Response, Request as ExpressRequest } from 'express';
@@ -9,7 +9,8 @@ import { AuthGuard } from '../guards/auth.guard';
 import { RedisService } from 'src/shared/services/redis.service';
 import { MailService } from 'src/shared/services/mail.service';
 import { PhoneService } from 'src/shared/services/phone.service';
-import { rmSync } from 'fs';
+import { QrCodeStatusEnum } from 'src/shared/enums/qrcode-status.enum';
+import * as qrcode from 'qrcode';
 @Controller('api/auth')
 export class AuthController {
     constructor(
@@ -82,15 +83,15 @@ export class AuthController {
     async sendEmailCode(@Body() body, @Res() res: Response) {
         const { email } = body;
         const code = this.utilityService.generateVerificationCode();
-        await this.redisService.set(email,code,300);//把邮件和验证码保存到redis中
-        await this.mailService.sendEmail(email,`邮件登录验证码`,`你的邮件登录验证码为${code}`,`你的邮件登录验证码为${code}`);
-        return res.json({success:true,message:`邮件验证码已经发送给${email}`});
+        await this.redisService.set(email, code, 300);//把邮件和验证码保存到redis中
+        await this.mailService.sendEmail(email, `邮件登录验证码`, `你的邮件登录验证码为${code}`, `你的邮件登录验证码为${code}`);
+        return res.json({ success: true, message: `邮件验证码已经发送给${email}` });
     }
     @Post('login-email-code')
     async loginEmailCode(@Body() body, @Res() res: Response) {
-        const { email,code } = body;
+        const { email, code } = body;
         const storedCode = await this.redisService.get(email);
-        if(code === storedCode){
+        if (code === storedCode) {
             const existUser = await this.userService.findOne({ where: { email }, relations: ['roles', 'roles.accesses'] });
             if (existUser) {
                 const tokens = this.createJwtTokens(existUser);
@@ -102,19 +103,19 @@ export class AuthController {
     @Post('send-phone-code')
     async sendPhoneCode(@Body() body, @Res() res: Response) {
         const { phone } = body;
-        try{
+        try {
             await this.phoneService.sendVerificationCode(phone);
-            return res.json({success:true,message:'手机验证码发送成功'});
-        }catch(error){
+            return res.json({ success: true, message: '手机验证码发送成功' });
+        } catch (error) {
             return res.status(HttpStatusCode.InternalServerError).json({ success: false, message: '手机验证码发送失败' })
         }
-      
+
     }
     @Post('login-phone-code')
     async loginPhoneCode(@Body() body, @Res() res: Response) {
-        const { phone,phoneCode } = body;
-        const isCodeValid = await this.phoneService.verifyCode(phone,phoneCode);
-        if(isCodeValid){
+        const { phone, phoneCode } = body;
+        const isCodeValid = await this.phoneService.verifyCode(phone, phoneCode);
+        if (isCodeValid) {
             const existUser = await this.userService.findOne({ where: { phone }, relations: ['roles', 'roles.accesses'] });
             if (existUser) {
                 const tokens = this.createJwtTokens(existUser);
@@ -124,4 +125,49 @@ export class AuthController {
         }
     }
 
+    @Get('qrcode')
+    async generateQrCode(@Res() res: Response) {
+        //先为此二维码生成一个随机的Token字符串，作为二维码的ID或者说主键或者说唯一标志
+        const token = this.utilityService.generateRandomString();
+        //放置到Redis数据中保存,5分钟后过期
+        await this.redisService.set(`qrcode_login:${token}`, QrCodeStatusEnum.PENDING, 300);
+        const qrCodeUrl = `http://localhost:3000/api/auth/qrcode-scan?token=${token}`;
+        console.log('qrCodeUrl', qrCodeUrl);
+        const qrCode = await qrcode.toDataURL(qrCodeUrl);
+        res.json({ token, qrCode });
+    }
+
+    @Get('qrcode-scan')
+    async handleQrCodeScan(@Query('token') token: string, @Res() res: Response) {
+        //当用户扫码的时候把二维码Token的状态必为已描述
+        await this.redisService.set(`qrcode_login:${token}`, QrCodeStatusEnum.SCANNED, 300);
+        return res.redirect(`/app_authorize.html?token=${token}`);
+    }
+    @Post('qrcode-deny')
+    async denyQrCode(@Query('token') token: string, @Res() res: Response) {
+        await this.redisService.set(`qrcode_login:${token}`, QrCodeStatusEnum.DENIED, 300);
+        return res.json({ success: true, message: '已拒绝授权' })
+    }
+    @Post('qrcode-authorize')
+    async authorizeQrCode(@Query('token') token: string, @Res() res: Response, @Body('appAccessToken') appAccessToken: string) {
+        console.log('authorizeQrCode',token)
+        //先获取到老的二维码的状态
+        const currentStatus = await this.redisService.get(`qrcode_login:${token}`);
+        console.log('currentStatus',currentStatus)
+        if (currentStatus !== QrCodeStatusEnum.SCANNED) {
+            return res.status(400).json({ success: false, message: '二维码未扫描或者已过期' })
+        }
+        if (!appAccessToken) {//如果没有提供用户登录的Token，服务器无法知道是哪个用户要授权登录
+            return res.status(400).json({ success: false, message: '用户信息未提供' })
+        }
+        try {
+            const decodedUser = this.jwtService.verify(appAccessToken, { secret: this.configurationService.jwtSecret });
+            await this.redisService.set(`qrcode_login:${token}`, QrCodeStatusEnum.AUTHORIZED, 300);
+            //保存此二维授权登录的用户ID
+            await this.redisService.set(`qrcode_login_user:${token}`, decodedUser.id, 300);
+            return res.json({ success: true, message: "授权成功" });
+        } catch (error) {
+            return res.status(400).json({ success: false, message: 'Unauthorized' })
+        }
+    }
 }

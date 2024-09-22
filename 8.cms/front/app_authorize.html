@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>扫码登录确认</title>
+    <link href="/style/bootstrap.min.css" rel="stylesheet" />
+    <link href="/style/bootstrap-icons.min.css" rel="stylesheet">
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/htmx.min.js"></script>
+    <script src="/js/handlebars.min.js"></script>
+    <script src="/js/client-side-templates.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h2 class="mt-5">当前App账号正在尝试登录CMS网页端</h2>
+        <div id="authSection" class="mt-3 d-none">
+            <p>你是否授权本次登录请求</p>
+            <button id="authorizeButton" class="btn btn-success">授权</button>
+            <button id="denyButton" class="btn btn-danger">取消</button>
+        </div>
+        <div id="errorMessage" class="alert alert-danger d-none mt-3"></div>
+
+    </div>
+    <script>
+        function done(result) {
+            if(result.success){
+                window.history.back();//如果授权成功，则跳回上一个页面
+            }else{
+                $('#errorMessage').removeClass('d-none').text(result.message)
+            }
+        }
+        function fail(result) {
+            $('#errorMessage').removeClass('d-none').text(result.responseJSON.message)
+        }
+        $(function () {
+            const appAccessToken = localStorage.getItem('app_access_token');
+            const token = new URLSearchParams(window.location.search).get('token');
+            if (appAccessToken) {//说明当前的APP用户已经登录了,可以去确认授权和取消授权了
+                $('#authSection').removeClass('d-none');
+            } else {//如果没有登录，则先跳到登录页登录去
+                window.location.href = `/app_login.html?redirect=${encodeURIComponent(window.location.href)}`;
+            }
+            $('#authorizeButton').click(function () {
+                $.post(`/api/auth/qrcode-authorize?token=${token}`,{appAccessToken}).done(done).fail(fail)
+            });
+            $('#denyButton').click(function () {
+                $.post(`/api/auth/qrcode-deny?token=${token}`).done(done).fail(fail)
+            });
+        })
+    </script>
+</body>
+
+</html>

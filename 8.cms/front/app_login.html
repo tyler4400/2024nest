@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App登录页</title>
+    <link href="/style/bootstrap.min.css" rel="stylesheet" />
+    <link href="/style/bootstrap-icons.min.css" rel="stylesheet">
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/htmx.min.js"></script>
+    <script src="/js/handlebars.min.js"></script>
+    <script src="/js/client-side-templates.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h2 class="mt-5">App登录</h2>
+        <div class="mt-3">
+            <label for="username" class="form-control">用户名</label>
+            <input type="text" class="form-control" id="username" name="username" required />
+        </div>
+        <div class="mt-3">
+            <label for="password" class="form-control">密码</label>
+            <input type="password" class="form-control" id="password" name="password" required />
+        </div>
+        <button id="loginButton" class="btn btn-primary mt-3" hx-post="/api/auth/login"
+            hx-trigger="click" hx-include="#username,#password" hx-target="#errorMessage" hx-swap="innerHTML">
+            App登录
+        </button>
+        <div id="errorMessage" class="alert alert-danger d-none mt-3"></div>
+    </div>
+<script>
+    function handleLoginResponse(event){
+        const result = JSON.parse(event.detail.xhr.responseText);
+        if(result.success){
+            localStorage.setItem('app_access_token', result.access_token);
+            localStorage.setItem('app_refresh_token', result.refresh_token);
+            const redirectUrl = new URLSearchParams(window.location.search).get('redirect');
+            if(redirectUrl){
+                window.location.href = redirectUrl;
+            }
+        }else{
+            $('#errorMessage').text(result.message).removeClass('d-none')
+        }
+    }
+$(function(){
+   $('#loginButton').on('htmx:afterRequest',handleLoginResponse);
+})
+</script>
+</body>
+</html>
