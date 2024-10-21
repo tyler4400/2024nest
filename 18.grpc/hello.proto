@@ -1,0 +1,22 @@
+// 使用proto3语法版本
+syntax = "proto3";
+//定义包名为hello
+package hello;
+//定义一个Greeter服务
+service Greeter {
+//定义一个rpc方法sayHello,接收HelloRequest,返回HelloReply    
+    rpc sayHello(HelloRequest) returns (HelloReply);
+    rpc sayHelloStream(HelloRequest) returns (stream HelloReply);
+}
+//定义helloRequest消息，里面包含一个字段name 类型是字符串 序列号1
+//每个字段都有一个唯一的数字编写，也就是字段序号。这些编号是用来唯一标识消息中的字段的
+//在protobuf的二进制格式中，消息会被序列化成字节，而不是使用字段的名称，而是使用字段序号来引用特定的字段
+//从而提高输效率和减少消息体积 {name:'zhangsan'}  1:zhangsan
+message HelloRequest{
+    string name = 1;
+}
+//定义HelloReply消息，包括一个字段为message
+message HelloReply{
+    //定义一个字符串类型的message字段，并且字段的序号为1
+    string message = 1;
+}

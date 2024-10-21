@@ -1,0 +1,3 @@
+- @grpc/grpc-js gRPC 的核心库，用于实现 gRPC 通信
+- @grpc/proto-loader 用于加载.proto 文件，这些文件定义了 gRPC 服务的接口
+- 使用.proto文件来定义服务接口和数据结构
