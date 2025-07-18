@@ -12,3 +12,7 @@
 ### 搬运自原仓库： 
 https://gitee.com/zhang_renyang/2024nest
 
+# ⚠️注意  
+想要学习源代码的， 需注意我已经往master上继续提交了我学习的内容，原始代码可能经被‘污染’了。 想要看原始代码的检出这个[Commit c903199](https://github.com/tyler4400/2024nest/commit/c903199a69768ce867313c39f682342b90bccc85)
+
+

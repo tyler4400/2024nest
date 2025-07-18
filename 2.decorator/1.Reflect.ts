@@ -1,10 +1,12 @@
 interface Obj {
     a: number;
-    b: number
+    b: string
 }
-const obj: Obj = { a: 1, b: 2 }
+const obj: Obj = { a: 1, b: 'hello' }
+
 console.log(Reflect.get(obj, 'a'))
-Reflect.set(obj, 'b', 2)
+
+Reflect.set(obj, 'b', 'hi')
 console.log(obj.b)
 //deleteProperty
 //has
