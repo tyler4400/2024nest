@@ -3,6 +3,13 @@ let users = {
     '001':{roles:['admin']},
     '002':{roles:['member']}
 }
+
+/**
+ *  *
+ *  * @param target 装饰的目标对象，如果是静态成员，则是类的构造函数，如果是实例成员，则是类的原型对象
+ *  * @param propertyKey 装饰的成员名称
+ *  * @param descriptor 成员的属性描述符
+ */
 function authorize(target:any,propertyKey:string,descriptor:PropertyDescriptor){
   //获取老的函数
    const originalMethod = descriptor.value;

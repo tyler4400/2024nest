@@ -2,7 +2,7 @@
 //还可以实现用属性装饰器来进行访问控制或者设置初始设置
 
 function defaultValue(value:any){
-    return function(target:any,propertyKey:string){
+    return function(target:any, propertyKey:string){
         let val = value;
         const getter = function(){
             return val;

@@ -7,6 +7,65 @@
 - 它通过提供对元数据定义和检查的支持，简化了装饰 器的使用
 - 可以在类、方法、参数、属性上设置和获取元数据
 
+## reflect-metadata 与 JavaScript Reflect 的关系
+
+### 两者没有直接关系
+`reflect-metadata` 这个库和 JavaScript 的 `Reflect` 语言标准**没有直接关系**，它们是两个不同的概念：
+
+#### JavaScript 的 Reflect 标准
+```javascript
+// JavaScript 标准的 Reflect 对象，用于对象操作
+const obj = { name: 'John', age: 30 };
+
+Reflect.get(obj, 'name');        // 'John'
+Reflect.set(obj, 'age', 31);     // true
+Reflect.has(obj, 'name');        // true
+Reflect.ownKeys(obj);            // ['name', 'age']
+```
+
+#### reflect-metadata 库
+```typescript
+// reflect-metadata 提供的元数据 API
+import 'reflect-metadata';
+
+Reflect.defineMetadata('key', 'value', target);
+Reflect.getMetadata('key', target);
+Reflect.hasMetadata('key', target);
+```
+
+### 为什么名字相似？
+`reflect-metadata` 选择使用 `Reflect` 作为命名空间，是因为它扩展了标准的 `Reflect` 对象：
+
+```typescript
+// 标准的 Reflect 方法
+Reflect.get(obj, 'name');
+
+// reflect-metadata 扩展的方法
+Reflect.defineMetadata('key', 'value', obj);
+Reflect.getMetadata('key', obj);
+```
+
+### 两者可以同时使用
+```typescript
+import 'reflect-metadata';
+
+const obj = { name: 'John' };
+
+// 使用标准 Reflect
+console.log(Reflect.get(obj, 'name')); // 'John'
+
+// 使用 reflect-metadata
+Reflect.defineMetadata('type', 'string', obj, 'name');
+console.log(Reflect.getMetadata('type', obj, 'name')); // 'string'
+```
+
+| 特性 | JavaScript Reflect | reflect-metadata |
+|------|-------------------|------------------|
+| 来源 | 语言标准 | 第三方库 |
+| 功能 | 对象操作 | 元数据管理 |
+| 关系 | 无直接关系 | 扩展了 Reflect 对象 |
+| 使用场景 | 对象反射操作 | 装饰器、依赖注入等 |
+
 ## 名词解释
 ### 元数据
 元数据是"描述数据的数据"，简单来说就是附加在代码上的额外信息。比如
