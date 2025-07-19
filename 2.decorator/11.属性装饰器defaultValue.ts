@@ -10,8 +10,8 @@ function defaultValue(value:any){
         const setter = function(newValue){
             val = newValue
         }
-        //在类的原型上定义了一个属性
-        Object.defineProperty(target,propertyKey,{
+        //在类的原型上定义了一个属性 // 这个在esnext不生效
+        Object.defineProperty(target, propertyKey, {
             enumerable:true,
             configurable:true,
             get:getter,
@@ -27,3 +27,7 @@ class Settings{
 
 const settings = new Settings();
 console.log(settings.theme)
+console.log('29: .settings: ', settings);
+
+console.log('esnext时，是实例上', Object.getOwnPropertyDescriptor(settings, 'theme'))
+console.log('esnext时，原型上', Object.getOwnPropertyDescriptor(Settings, 'theme'))

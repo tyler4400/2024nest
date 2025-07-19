@@ -7,7 +7,7 @@
 ### 在线视频和资源
 [2025最新版 Nest.js 零基础入门到精通教程（全116集）](https://www.bilibili.com/video/BV1UMw5eDEya)
 
-[视频资源网盘资源](https://pan.baidu.com/s/1g2EhFhOdOpKSF3tiYXb-cA?pwd=fvqv) 提取码: fvqv
+[视频资源网盘资源](https://pan.baidu.com/s/1EwKemoW7_jCSuAjvFVrGOw?pwd=ny4f) 提取码: ny4f
 
 ### 搬运自原仓库： 
 https://gitee.com/zhang_renyang/2024nest
