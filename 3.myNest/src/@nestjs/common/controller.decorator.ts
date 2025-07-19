@@ -20,6 +20,6 @@ export function Controller(prefixOrOptions?: string | ControllerOptions): ClassD
 	//这是一个类装饰器，装饰的控制器这个类
 	return (target: Function) => {
 		//给控制器类添加prefix路径前缀的元数据
-		Reflect.defineMetadata('prefix', options.prefix||'', target);
+		Reflect.defineMetadata('prefix', options.prefix || '', target);
 	}
 }

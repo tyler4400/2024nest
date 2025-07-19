@@ -1,20 +1,51 @@
-import express, { Express} from "express";
+import express, { Express, Request as ExpressRequest, Response as ExpressResponse, NextFunction } from 'express'
 import { Logger } from "@nest/core";
-
-
+import * as path from "node:path";
 
 export class NestApplication {
 	//在它的内部私用化一个Express实例
 	private readonly app: Express = express()
-	constructor(protected readonly module) { }
+	constructor(protected readonly module: Function) { }
 
 	async init() {
 		Logger.log('Application initialized', 'NestApplication');
 
 		//取出模块里所有的控制器，然后做好路由配置
 		const controllers = Reflect.getMetadata('controllers', this.module);
-		console.log('15: init.controllers: ', controllers);
+		for (const Controller of controllers) {
+			//创建每个控制器的实例
+			const controller = new Controller();
+			//获取控制器的路径前缀
+			const prefix = Reflect.getMetadata('prefix', Controller) || '/';
+
+			Logger.log(`${Controller.name} {${prefix}}`, 'RoutesResolver');
+
+			const controllerPrototype = Controller.prototype;
+			//遍历类的原型上的方法名
+			for (const methodName of Object.getOwnPropertyNames(controllerPrototype)) {
+				//获取原型上的方法 index
+				const method = controllerPrototype[methodName];
+				//取得此函数上绑定的方法名的元数据
+				const httpMethod = Reflect.getMetadata('method', method);//GET
+				//取得此函数上绑定的路径的元数据
+				const pathMetadata = Reflect.getMetadata('path', method);
+				//如果方法名不存在，则不处理
+				if (!httpMethod) continue;
+				//拼出来完整的路由路径
+				const routePath = path.posix.join('/', prefix, pathMetadata)
+
+				//配置路由，当客户端以httpMethod方法请求routePath路径的时候，会由对应的函数进行处理
+				this.app[httpMethod.toLowerCase()](routePath, (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
+					// const args = this.resolveParams(controller, methodName, req, res, next);
+					const result = method.call(controller);
+					res.send(result);
+				})
+				Logger.log(`Mapped {${routePath}, ${httpMethod}} route`, 'RoutesResolver');
+			}
+		}
+		Logger.log(`Nest application successfully started`, 'NestApplication');
 	}
+
 
 	async listen(port: number) {
 		await this.init()
