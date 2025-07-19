@@ -2,6 +2,7 @@ import express, { Express, Request as ExpressRequest, Response as ExpressRespons
 import { Logger } from "@nest/core";
 import * as path from "node:path";
 import 'reflect-metadata';
+import { ExistingParam } from "@nest/common";
 
 export class NestApplication {
 	//在它的内部私用化一个Express实例
@@ -52,17 +53,19 @@ export class NestApplication {
 		/**
 		 * 在defineMetaData的时候，target的是原型，这里使用的示例。这是ok的，因为getMetadata会通过原型链查找，如果是getOwnMetadata则会找不到
 		 */
-		const paramsMetaData = Reflect.getMetadata(`params`, instance, methodName);
+		const paramsMetaData: ExistingParam[] = Reflect.getMetadata(`params`, instance, methodName);
 		console.log('52: resolveParams.paramsMetaData: ', paramsMetaData);
 		//[{ parameterIndex: 0, key: 'Req' },{ parameterIndex: 1, key: 'Request' }]
 		//此处就是把元数据变成实际的参数
 		if (!paramsMetaData) return []
-		return paramsMetaData.sort((a, b) => a.parameterIndex - b.parameterIndex).map((paramMetaData) => {
-			const { key } = paramMetaData;
+		return paramsMetaData.map((paramMetaData) => {
+			const { key, data } = paramMetaData;
 			switch (key) {
 				case "Request":
 				case "Req":
 					return req;
+				case "Query":
+					return data ? req.query[data] : req.query
 				default:
 					return null;
 			}

@@ -1,0 +1,5 @@
+### 测试Request参数装饰器
+GET {{host}}:{{port}}/users/req
+
+### 测试Query参数装饰器
+GET {{host}}:{{port}}/users/query?id=123&random={{$random.address.city}}
