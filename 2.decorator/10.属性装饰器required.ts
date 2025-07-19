@@ -11,11 +11,14 @@ function required(target: any, propertyKey: string){
     //添加元数据，就是给类的原型对象的username属性上添加元数据required:true
    Reflect.defineMetadata('required',true, target, propertyKey)
 }
+
 function validate(user:User){
   for(let key in user){
     //如果此属性标识为必填了，但是值却是空的
-    //上面添的添加类的原型上了，此处通过实例取没问题，因为会找原型链
-    if(Reflect.getMetadata('required',user,key) && !user[key]){
+    //上面添的添加类的原型上User.prototype了，此处通过实例new User()取没问题，因为Reflect.getMetadata会找原型链, Reflect.getOwnMetadata自会查找自身是找不到的。
+    const isRequired = Reflect.getOwnMetadata('required', user, key)
+    console.log('19: validate.isRequired: ', isRequired);
+    if(isRequired && !user[key]){
         throw new Error(`Property ${key} is required`)
     }
   }

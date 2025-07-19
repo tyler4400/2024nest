@@ -2,8 +2,9 @@ import 'reflect-metadata'
 //用于装饰 类的构造函数或方法的参数
 //用来实现在方法调用时验证参数的值
 const REQUIRED_PARAMETERS = 'REQUIRED_PARAMETERS'
+
 /**
- * @param target 装饰的目标对象，对于静态成员来说....
+ * @param target 装饰的目标对象，如果是静态成员，则是类的构造函数，如果是实例成员，则是类的原型对象
  * @param propertyKey 参数所属的方法名称
  * @param parameterIndex 参数在参数列表中的索引 0
  */

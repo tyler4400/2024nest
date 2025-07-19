@@ -30,4 +30,4 @@ console.log(settings.theme)
 console.log('29: .settings: ', settings);
 
 console.log('esnext时，是实例上', Object.getOwnPropertyDescriptor(settings, 'theme'))
-console.log('esnext时，原型上', Object.getOwnPropertyDescriptor(Settings, 'theme'))
+console.log('esnext时，原型上是没有的', Object.getOwnPropertyDescriptor(Settings, 'theme'))
