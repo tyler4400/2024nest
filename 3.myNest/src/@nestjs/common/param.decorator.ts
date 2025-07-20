@@ -9,7 +9,7 @@ export const createParamDecorator = (key: string) => {
 		existingParameters[parameterIndex] = ({ parameterIndex, key, data });
 		//existingParameters[parameterIndex]=key;
 		//[{ parameterIndex: 1, key: 'Request' },{ parameterIndex: 0, key: 'Req' }]
-		console.log('existingParameters', existingParameters, target, propertyKey, parameterIndex);
+		// console.log('existingParameters', existingParameters, target, propertyKey, parameterIndex);
 		Reflect.defineMetadata(`params`, existingParameters, target, propertyKey);
 	}
 }
@@ -20,6 +20,9 @@ export const Headers = createParamDecorator('Headers');
 export const Session = createParamDecorator('Session');
 export const Ip = createParamDecorator('Ip');
 export const Param = createParamDecorator('Param');
+export const Body = createParamDecorator('Body');
+export const Cookie = createParamDecorator('Cookie');
+export const Response = createParamDecorator('Response');
 
 export interface ExistingParam {
 	key: string

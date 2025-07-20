@@ -1,21 +1,43 @@
-### 测试 Request参数装饰器
+### Request参数装饰器
 GET {{host}}:{{port}}/users/req
 
-### 测试 Query参数装饰器
+### Query参数装饰器
 GET {{host}}:{{port}}/users/query?id=123&random={{$random.address.city}}
 
-### 测试 headers 参数装饰器
+### headers 参数装饰器
 GET {{host}}:{{port}}/users/headers
 custom-header: 123
 
-### 测试 session 参数装饰器
+### session 参数装饰器
 GET {{host}}:{{port}}/users/session
 
-### 测试 ip 参数装饰器
+### ip 参数装饰器
 GET {{host}}:{{port}}/users/ip
 
-### 测试 路径参数params 参数装饰器
+### 路径参数params 参数装饰器
 GET {{host}}:{{port}}/users/sdadawdf/info/sgrgsrgsf
 
-### 测试 路径通配符 参数装饰器
+### 路径通配符 参数装饰器
 GET {{host}}:{{port}}/users/star/abccccde
+
+### Body
+POST {{host}}:{{port}}/users/create
+Content-Type: application/json
+
+{
+  "username": "张三",
+  "hhhh": 12313
+}
+
+### cookie
+POST {{host}}:{{port}}/users/cookie
+
+### response 使用response装饰器
+GET {{host}}:{{port}}/users/response
+
+### hangout 请求应当挂起
+GET {{host}}:{{port}}/users/hangout
+
+### passthrough 请求不应当挂起
+GET {{host}}:{{port}}/users/passthrough
+
