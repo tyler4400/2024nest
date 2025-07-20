@@ -23,6 +23,7 @@ export const Param = createParamDecorator('Param');
 export const Body = createParamDecorator('Body');
 export const Cookie = createParamDecorator('Cookie');
 export const Response = createParamDecorator('Response');
+export const Next = createParamDecorator('Next');
 
 export interface ExistingParam {
 	key: string

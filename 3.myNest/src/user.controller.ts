@@ -1,4 +1,4 @@
-import { Controller, Get, Ip, Param, Query, Req, Request, Session, Headers, Body, Post, Cookie, Response } from '@nest/common'
+import { Controller, Get, Ip, Param, Query, Req, Request, Session, Headers, Body, Post, Cookie, Response, Next } from '@nest/common'
 import {Request as ExpressRequest, Response as ExpressResponse} from 'express'
 import { Logger } from "@nest/core";
 
@@ -98,5 +98,17 @@ export class UserController{
         //response.json({success:true});
         //还是想返回一个值让Nest帮我们进行发送响应体操作
         return `有些我只是想添个响应头，仅此而矣，我不想负责响应体的发送`
+    }
+
+    @Get('next')
+    next(@Next() next){
+        console.log('next')
+        /**
+         * 在Express中，next()函数的作用是将控制权传递给下一个中间件。当你在路由处理函数中调用next()时：
+         * 当前处理函数结束执行
+         * Express寻找下一个能处理该请求的中间件或路由
+         * 如果没有找到，就会走到404处理器
+         */
+        next();
     }
 }

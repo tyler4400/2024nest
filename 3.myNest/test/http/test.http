@@ -41,3 +41,6 @@ GET {{host}}:{{port}}/users/hangout
 ### passthrough 请求不应当挂起
 GET {{host}}:{{port}}/users/passthrough
 
+### next 请求不应当挂起
+GET {{host}}:{{port}}/users/next
+

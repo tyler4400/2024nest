@@ -109,6 +109,8 @@ export class NestApplication {
 				case "Response":
 				case "Res":
 					return res;
+				case "Next":
+					return next;
 				default:
 					return null;
 			}
