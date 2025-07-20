@@ -1,5 +1,21 @@
-### 测试Request参数装饰器
+### 测试 Request参数装饰器
 GET {{host}}:{{port}}/users/req
 
-### 测试Query参数装饰器
+### 测试 Query参数装饰器
 GET {{host}}:{{port}}/users/query?id=123&random={{$random.address.city}}
+
+### 测试 headers 参数装饰器
+GET {{host}}:{{port}}/users/headers
+custom-header: 123
+
+### 测试 session 参数装饰器
+GET {{host}}:{{port}}/users/session
+
+### 测试 ip 参数装饰器
+GET {{host}}:{{port}}/users/ip
+
+### 测试 路径参数params 参数装饰器
+GET {{host}}:{{port}}/users/sdadawdf/info/sgrgsrgsf
+
+### 测试 路径通配符 参数装饰器
+GET {{host}}:{{port}}/users/star/abccccde

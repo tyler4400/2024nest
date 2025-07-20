@@ -9,7 +9,11 @@ export class NestApplication {
 	private readonly app: Express = express()
 	constructor(protected readonly module: Function) { }
 
-	async init() {
+	use(middleware) {
+		this.app.use(middleware)
+	}
+
+	private async init() {
 		Logger.log('Application initialized', 'NestApplication');
 
 		//取出模块里所有的控制器，然后做好路由配置
@@ -53,11 +57,10 @@ export class NestApplication {
 		/**
 		 * 在defineMetaData的时候，target的是原型，这里使用的示例。这是ok的，因为getMetadata会通过原型链查找，如果是getOwnMetadata则会找不到
 		 */
-		const paramsMetaData: ExistingParam[] = Reflect.getMetadata(`params`, instance, methodName);
+		const paramsMetaData: ExistingParam[] = Reflect.getMetadata(`params`, instance, methodName) || [];
 		console.log('52: resolveParams.paramsMetaData: ', paramsMetaData);
 		//[{ parameterIndex: 0, key: 'Req' },{ parameterIndex: 1, key: 'Request' }]
 		//此处就是把元数据变成实际的参数
-		if (!paramsMetaData) return []
 		return paramsMetaData.map((paramMetaData) => {
 			const { key, data } = paramMetaData;
 			switch (key) {
@@ -65,7 +68,15 @@ export class NestApplication {
 				case "Req":
 					return req;
 				case "Query":
-					return data ? req.query[data] : req.query
+					return data ? req.query[data] : req.query;
+				case "Headers":
+					return data ? req.headers[data] : req.headers;
+				case 'Session':
+					return data ? req.session[data] : req.session;
+				case 'Ip':
+					return req.ip;
+				case 'Param':
+					return data ? req.params[data] : req.params;
 				default:
 					return null;
 			}
