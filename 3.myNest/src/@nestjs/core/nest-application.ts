@@ -37,7 +37,7 @@ export class NestApplication {
 			//遍历类的原型上的方法名
 			for (const methodName of Object.getOwnPropertyNames(controllerPrototype)) {
 				//获取原型上的方法 index
-				const method = controllerPrototype[methodName];
+				const method: Function = controllerPrototype[methodName];
 				//取得此函数上绑定的方法名的元数据
 				const httpMethod: string = Reflect.getMetadata('method', method); //GET
 				//取得此函数上绑定的路径的元数据
@@ -86,7 +86,7 @@ export class NestApplication {
 		//[{ parameterIndex: 0, key: 'Req' },{ parameterIndex: 1, key: 'Request' }]
 		//此处就是把元数据变成实际的参数
 		return paramsMetaData.map((paramMetaData) => {
-			const { key, data } = paramMetaData;
+			const { key, data, factory } = paramMetaData;
 			switch (key) {
 				case "Request":
 				case "Req":
@@ -111,6 +111,17 @@ export class NestApplication {
 					return res;
 				case "Next":
 					return next;
+				case "DecoratorFactory":
+					// 这里写个假的示例
+					const ctx = {
+						//因为Nest不但支持http,还支持graphql 微服务 websocket
+						switchToHttp: () => ({
+							getRequest: () => req,
+							getResponse: () => req,
+							getNext: () => next,
+						})
+					}
+					return factory(data, ctx);
 				default:
 					return null;
 			}

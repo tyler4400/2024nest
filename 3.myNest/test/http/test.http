@@ -44,3 +44,15 @@ GET {{host}}:{{port}}/users/passthrough
 ### next 请求不应当挂起
 GET {{host}}:{{port}}/users/next
 
+### 自定义装饰器
+POST {{host}}:{{port}}/users/custom
+Content-Type: application/json
+
+{
+  "user": {
+      "role": "admin",
+      "name": "张三"
+  }
+}
+
+

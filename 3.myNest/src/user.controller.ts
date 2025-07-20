@@ -1,6 +1,7 @@
 import { Controller, Get, Ip, Param, Query, Req, Request, Session, Headers, Body, Post, Cookie, Response, Next } from '@nest/common'
 import {Request as ExpressRequest, Response as ExpressResponse} from 'express'
 import { Logger } from "@nest/core";
+import { User } from './customerDecorator';
 
 @Controller('users')
 export class UserController{
@@ -111,4 +112,21 @@ export class UserController{
          */
         next();
     }
+
+    @Post('custom')
+    customParamDecorator(@User('role') role,@User() user){
+        console.log('117: customParamDecorator.user: ', user);
+        console.log('117: customParamDecorator.role: ', role);
+        return { code: '0', data: user };
+    }
 }
+
+/**
+ * 在使用Nest.js的时候，一般来说一个实体会定义二个类型，一个是dto，一个是interface
+ * dto 客户端向服务器提交的数据对象，比如说当用户注册的时候 {用户名，密码}
+ * 然后服务器端一般会获取此dto，然后保存到数据库中，保存的时候可能会还加入一些默认值，时间戳，对密码加密
+ * 还可能会过滤掉某些字段，比如注册的时候密码和确认密码，但是保存的时候只保存密码
+ * 数据库里保存的数据类型一般会定义为一个interface
+ * userDto {用户名，密码，确认密码}
+ * userInterface {用户名，密码，创建时间，更新时间}
+ */
