@@ -1,6 +1,10 @@
 {
+  "scripts": {
+    "test": "ts-node ioc.ts"
+  },
   "dependencies": {
     "reflect-metadata": "^0.2.2",
+    "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0"
   }
 }

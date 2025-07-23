@@ -1,0 +1,28 @@
+{
+  "name": "ioc-metadata-test",
+  "version": "1.0.0",
+  "description": "TypeScript装饰器元数据测试项目",
+  "main": "index.js",
+  "scripts": {
+    "test": "ts-node 5.元数据自动生成.ts",
+    "build": "tsc",
+    "test:compiled": "npm run build && node dist/5.元数据自动生成.ts",
+    "dev": "ts-node --watch 5.元数据自动生成.ts"
+  },
+  "keywords": [
+    "typescript",
+    "decorator",
+    "metadata",
+    "reflect"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "reflect-metadata": "^0.1.14"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}
