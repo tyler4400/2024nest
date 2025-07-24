@@ -2,7 +2,8 @@ import express, { Express, Request as ExpressRequest, Response as ExpressRespons
 import { Logger } from "@nest/core";
 import * as path from "node:path";
 import 'reflect-metadata';
-import { ExistingParam } from "@nest/common";
+import { DESIGN_PARAMTYPES, ExistingParam, INJECTED_TOKENS } from "@nest/common";
+import { LoggerClassService, UseValueService } from "../../logger.service";
 
 export class NestApplication {
 	//在它的内部私用化一个Express实例
@@ -20,14 +21,30 @@ export class NestApplication {
 		this.app.use(middleware)
 	}
 
+
+	private resolveDependencies(Clazz: any){
+		//取得由@Inject('StringToken') 注入的token
+		const injectTokens = Reflect.getMetadata(INJECTED_TOKENS, Clazz) ?? [];
+		//获取构造函数的参数类型.这个是ts自动注入的
+		const constructorParams = Reflect.getMetadata(DESIGN_PARAMTYPES, Clazz) ?? [];
+		// 临时测试
+		return constructorParams.map((param, index) => {
+			if (index === 0) return new LoggerClassService()
+			if (index === 1) return new UseValueService('这是参数')
+		})
+
+	}
+
 	private async init() {
 		Logger.log('Application initialized', 'NestApplication');
 
 		//取出模块里所有的控制器，然后做好路由配置
 		const controllers = Reflect.getMetadata('controllers', this.module);
 		for (const Controller of controllers) {
+			//解析出控制器的依赖
+			const dependencies = this.resolveDependencies(Controller)
 			//创建每个控制器的实例
-			const controller = new Controller();
+			const controller = new Controller(...dependencies);
 			//获取控制器的路径前缀
 			const prefix = Reflect.getMetadata('prefix', Controller) || '/';
 

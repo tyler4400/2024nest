@@ -55,4 +55,7 @@ Content-Type: application/json
   }
 }
 
+### inject 注入测试
+GET {{host}}:{{port}}/inject-test
+
 
