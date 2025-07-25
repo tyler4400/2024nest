@@ -1,14 +1,14 @@
 import { Controller, Get, Inject } from '@nest/common'
-import { LoggerClassService, UseValueService } from "./logger.service";
+import { LoggerClassService, LoggerService, UseFactory, UseValueService } from "./logger.service";
 
 @Controller()
 export class AppController {
 
 	constructor(
 		private loggerClassService: LoggerClassService,
-		// private loggerService: LoggerService,
+		private loggerService: LoggerService,
 		@Inject('StringToken') private useValueService: UseValueService,
-		// @Inject('FactoryToken') private useFactory: UseFactory,
+		@Inject('FactoryToken') private useFactory: UseFactory,
 	) {
 
 	}
@@ -25,10 +25,11 @@ export class AppController {
 
 	@Get('inject-test')
 	injectTest() {
-		this.loggerClassService.log('注入了');
-		// this.loggerService.log('index');
-		this.useValueService.log('注入了');
-		// this.useFactory.log('index');
-		return '注入了';
+		let str = ''
+		str += this.loggerClassService.log('注入了\n');
+		str += this.loggerService.log('注入了\n');
+		str += this.useValueService.log('注入了\n');
+		str += this.useFactory.log('注入了\n');
+		return str;
 	}
 }
