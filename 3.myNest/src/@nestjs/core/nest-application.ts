@@ -3,13 +3,12 @@ import { Logger } from "@nest/core";
 import * as path from "node:path";
 import 'reflect-metadata';
 import { DESIGN_PARAMTYPES, ExistingParam, INJECTED_TOKENS } from "@nest/common";
-import { LoggerClassService, UseValueService } from "../../logger.service";
 
 export class NestApplication {
 	//在它的内部私用化一个Express实例
 	private readonly app: Express = express()
 
-	//在此处保存全部的providers
+	//在这个字段保存全部的providers
 	private readonly providers = new Map()
 
 	constructor(protected readonly module: Function) {
@@ -19,39 +18,56 @@ export class NestApplication {
 		// 	req.user = { name: 'admin', role: 'admin' };
 		// 	next();
 		// });
-		this.initProviders();//注入providers
-		console.log('nest-application.ts.22.constructor.this.providers: ', this.providers);
+
+		// 遍历模块， 构建每个模块的依赖关系，从而初始化providers
+		this.initModule();
+		console.log('所有的providers映射表', this.providers);
 
 	}
 
-	private initProviders(): void {
-		// 取得有模块装饰器定义的providers元数据
-		const providers = Reflect.getMetadata('providers', this.module) ?? []
-		for (const provider of providers) {
-			// 处理provider的几种情况
-			if (!provider.provide) {
-				//表示只提供了一个类,token是这个类，值是这个类的实例
-				const dependencies = this.resolveDependencies(provider);
-				this.providers.set(provider, new provider(...dependencies));
-				continue
-			}
-			if (provider.useClass) {
-				const dependencies = this.resolveDependencies(provider.useClass);
-				const instance = new provider.useClass(...dependencies);
-				this.providers.set(provider.provide, instance);
-			}
-			if (provider.useValue) {
-				//提供的是一个值，则不需要容器帮助实例化，直接使用此值注册就可以了
-				this.providers.set(provider.provide, provider.useValue)
-			}
-			if(provider.useFactory) {
-				const inject = provider.inject ?? []
-				const params = inject.map(item => this.providers.get(item) ?? item)
-				const instance = provider.useFactory(...params)
-				this.providers.set(provider.provide, instance)
-
+	private initModule(): void {
+		//获取模块导入的元数据
+		const imports = Reflect.getMetadata('imports', this.module) ?? [];
+		for (const importModule of imports) {
+			//获取导入模块中的提供者元数据[SUFFIX,LoggerClassService]
+			Logger.log('Module initialized', String(importModule));
+			const importedProviders = Reflect.getMetadata('providers', importModule) ?? []
+			for (const provider of importedProviders) {
+				this.initProviders(provider)
 			}
 		}
+	}
+
+	private initProviders(provider: any): void {
+		//为了避免循环依赖，每次添加前可以做一个判断，如果Map中已经存在，则直接返回
+		//const injectToken = provider.provide??provider;
+		//if(this.providers.has(injectToken)) return;
+		//如果有provider的token,并且有useClass属性，说明提供的是一个类，需要实例化
+
+			// 处理provider的几种情况
+		if (!provider.provide) {
+			//表示只提供了一个类,token是这个类，值是这个类的实例
+			const dependencies = this.resolveDependencies(provider);
+			this.providers.set(provider, new provider(...dependencies));
+			return
+		}
+		if (provider.useClass) {
+			const dependencies = this.resolveDependencies(provider.useClass);
+			const instance = new provider.useClass(...dependencies);
+			this.providers.set(provider.provide, instance);
+		}
+		if (provider.useValue) {
+			//提供的是一个值，则不需要容器帮助实例化，直接使用此值注册就可以了
+			this.providers.set(provider.provide, provider.useValue)
+		}
+		if(provider.useFactory) {
+			const inject = provider.inject ?? []
+			const params = inject.map(item => this.providers.get(item) ?? item)
+			const instance = provider.useFactory(...params)
+			this.providers.set(provider.provide, instance)
+
+		}
+
 
 	}
 
@@ -63,7 +79,6 @@ export class NestApplication {
 	private resolveDependencies(Clazz: any){
 		//取得由@Inject('StringToken') 注入的token
 		const injectTokens = Reflect.getMetadata(INJECTED_TOKENS, Clazz) ?? [];
-		console.log('nest-application.ts.32.resolveDependencies.injectTokens: ', injectTokens);
 		//获取构造函数的参数类型. 这个是ts自动注入的
 		const constructorParams = Reflect.getMetadata(DESIGN_PARAMTYPES, Clazz) ?? [];
 		return constructorParams.map((param, index) => {
