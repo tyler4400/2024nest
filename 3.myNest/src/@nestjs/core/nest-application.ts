@@ -14,10 +14,6 @@ export class NestApplication {
 	constructor(protected readonly module: Function) {
 		this.app.use(express.json());//用来把JSON格式的请求体对象放在req.body上
 		this.app.use(express.urlencoded({ extended: true }));//把form表单格式的请求体对象放在req.body
-		// this.app.use((req, res, next) => {
-		// 	req.user = { name: 'admin', role: 'admin' };
-		// 	next();
-		// });
 
 		// 遍历模块， 构建每个模块的依赖关系，从而初始化providers
 		this.initModule();
@@ -26,16 +22,48 @@ export class NestApplication {
 	}
 
 	private initModule(): void {
-		//获取模块导入的元数据
 		const imports = Reflect.getMetadata('imports', this.module) ?? [];
+
+		// 遍历处理导入的模块
 		for (const importModule of imports) {
-			//获取导入模块中的提供者元数据[SUFFIX,LoggerClassService]
-			Logger.log('Module initialized', String(importModule));
-			const importedProviders = Reflect.getMetadata('providers', importModule) ?? []
-			for (const provider of importedProviders) {
-				this.initProviders(provider)
+			this.registerProvidersFromModule(importModule);
+		}
+
+		// 最后给root模块初始化
+		Logger.log('Module initialized', this.module.name);
+
+		//获取当前模块提供者的元数据
+		const providers = Reflect.getMetadata('providers', this.module) ?? [];
+		//遍历并添加每个提供者
+		for (const provider of providers) {
+			this.initProviders(provider);
+		}
+	}
+
+	private registerProvidersFromModule(module) {
+		Logger.log('Module initialized', module.name);
+
+		//拿到导入的模块providers进行全量注册
+		const importedProviders = Reflect.getMetadata('providers', module) ?? [];
+		//1.有可能导入的模块只导出了一部分，并没有全量导出,所以需要使用exports进行过滤
+		const exports = Reflect.getMetadata('exports', module) ?? [];
+		//遍历导出exports数组
+		for (const exportToken of exports) {
+			//2.exports里还可能有module
+			if (this.isModule(exportToken)) {
+				//要执行递归操作
+				this.registerProvidersFromModule(exportToken);
+			} else {
+				const provider = importedProviders.find(provider => provider === exportToken || provider.provide == exportToken);
+				if (provider) {
+					this.initProviders(provider);
+				}
 			}
 		}
+	}
+
+	private isModule(exportToken) {
+		return exportToken && exportToken instanceof Function && Reflect.getMetadata('isModule', exportToken);
 	}
 
 	private initProviders(provider: any): void {

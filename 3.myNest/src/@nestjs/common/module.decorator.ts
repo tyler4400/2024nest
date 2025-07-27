@@ -12,7 +12,10 @@ interface ModuleMetadata {
 
 export function Module(metadata: ModuleMetadata): ClassDecorator{
 	return (target: Function): void => {
-		Logger.log('给模块类添加元数据，元数据叫controllers', target.constructor.name)
+
+		//当一个类使用Module装饰器的时候就可以添加标识它是一个模块的元数据
+		Reflect.defineMetadata('isModule', true, target);
+
 		//给模块类添加元数据 AppModule,元数据的名字叫controllers,值是controllers数组[AppController]
 		Reflect.defineMetadata('controllers', metadata.controllers, target);
 

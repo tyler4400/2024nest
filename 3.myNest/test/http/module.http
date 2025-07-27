@@ -17,3 +17,13 @@ GET {{host}}:{{port}}/inject-test
 %}
 
 
+### inject 模块导入导出
+GET {{host}}:{{port}}//common/common-service
+
+> {%
+    client.test("Inject test request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+      const responseBody = response.body;
+        client.assert(responseBody.data === 'CommonService', "Response data is not CommonService");
+    });
+%}
