@@ -1,0 +1,19 @@
+### inject 注入测试
+GET {{host}}:{{port}}/inject-test
+
+> {%
+    client.test("Inject test request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Response contains all injected services", function () {
+        const responseText = response.body;
+        client.assert(responseText.includes("LoggerClassService"), "LoggerClassService not found in response");
+        client.assert(responseText.includes("LoggerService"), "LoggerService not found in response");
+        client.assert(responseText.includes("UseValueService"), "UseValueService not found in response");
+        client.assert(responseText.includes("UseFactory"), "UseFactory not found in response");
+        client.assert(responseText.includes("注入了"), "Injection success message not found");
+    });
+%}
+
+

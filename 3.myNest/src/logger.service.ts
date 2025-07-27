@@ -14,7 +14,7 @@ export class LoggerService{
 	}
 	log(message){
 		console.log('LoggerService', message)
-		return ('LoggerService: ' + message)
+		return ('LoggerService: this.suffix: ' + this.suffix +', ' + message)
 	}
 }
 

@@ -55,7 +55,15 @@ Content-Type: application/json
   }
 }
 
-### inject 注入测试
-GET {{host}}:{{port}}/inject-test
+> {%
+    client.test("Custom decorator request executed successfully", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
 
-
+    client.test("Response contains expected data structure", function () {
+        client.assert(response.body.code === '0', "Response code is not '0'");
+        client.assert(response.body.data !== undefined, "Response data is undefined");
+        client.assert(response.body.data.role === 'admin', "User role is not 'admin'");
+        client.assert(response.body.data.name === '张三', "User name is not '张三'");
+    });
+%}

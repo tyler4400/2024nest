@@ -66,7 +66,6 @@ export class NestApplication {
 		console.log('nest-application.ts.32.resolveDependencies.injectTokens: ', injectTokens);
 		//获取构造函数的参数类型. 这个是ts自动注入的
 		const constructorParams = Reflect.getMetadata(DESIGN_PARAMTYPES, Clazz) ?? [];
-		// 临时测试
 		return constructorParams.map((param, index) => {
 			//把每个param中的token默认换成对应的provider值
 			return this.providers.get(injectTokens[index] ?? param);
