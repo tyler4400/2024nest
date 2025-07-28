@@ -67,6 +67,7 @@ export class NestApplication {
 	}
 
 	private initProviders(provider: any): void {
+		// todo
 		//为了避免循环依赖，每次添加前可以做一个判断，如果Map中已经存在，则直接返回
 		//const injectToken = provider.provide??provider;
 		//if(this.providers.has(injectToken)) return;
